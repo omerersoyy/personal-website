@@ -1,0 +1,99 @@
+---
+/**
+ * PlayCard — one game on the link-in-bio page (01-PAGES.md §4).
+ * Icon, title, tagline, then both store buttons side by side. Games that are
+ * not live show "Coming soon" and a link to the game page instead.
+ */
+import type { CollectionEntry } from "astro:content";
+import { Image } from "astro:assets";
+import FoldCard from "./FoldCard.astro";
+import StoreBadges from "./StoreBadges.astro";
+
+interface Props {
+  game: CollectionEntry<"games">;
+}
+
+const { game } = Astro.props;
+const { title, tagline, status, cover, icon, appStoreUrl, playStoreUrl } =
+  game.data;
+const live = status === "live";
+// The store icon is already square and rounded; a cover has to be cropped.
+const thumb = icon ?? cover;
+---
+
+<FoldCard as="li" class="play-card">
+  <div class="head">
+    <Image
+      class:list={["icon", { "is-icon": !!icon }]}
+      src={thumb}
+      alt=""
+      width={64}
+      height={64}
+      densities={[1, 2]}
+    />
+    <div>
+      <h2>{title}</h2>
+      <p class="tagline">{tagline}</p>
+    </div>
+  </div>
+
+  {
+    live ? (
+      <StoreBadges appStore={appStoreUrl} playStore={playStoreUrl} height={44} class="stores" />
+    ) : (
+      <p class="soon">
+        Coming soon · <a href={`/games/${game.id}`}>About {title}</a>
+      </p>
+    )
+  }
+</FoldCard>
+
+<style>
+  .play-card {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+  }
+
+  .icon {
+    flex: none;
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    object-position: top;
+  }
+
+  /* A real store icon is already square and rounded — cropping or re-rounding
+     it would fight artwork that is already correct. */
+  .icon.is-icon {
+    object-position: center;
+    border-radius: var(--radius);
+    background: none;
+    border-radius: var(--radius);
+    background: var(--c-surface-2);
+  }
+
+  h2 {
+    font-size: var(--t-body-lg);
+  }
+
+  .tagline {
+    color: var(--c-mist);
+    font-size: var(--t-small);
+    margin-top: var(--s-1);
+  }
+
+  .soon {
+    font-size: var(--t-small);
+    color: var(--c-mist);
+    /* Matches the store buttons' touch target so the cards stay even. */
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+</style>

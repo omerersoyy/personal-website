@@ -1,0 +1,81 @@
+---
+/**
+ * /support — short and functional (01-PAGES.md §7).
+ * No FAQ, no contact form: a form needs a backend and attracts spam.
+ */
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import SectionRule from "../components/SectionRule.astro";
+
+const policies = await getCollection("policies");
+---
+
+<Base
+  title="Support — Tesser"
+  description="Support for Tesser games. Write to support@tessergames.com."
+>
+  <div class="wrap section">
+    <h1>Support</h1>
+
+    <p class="lede measure">
+      Something broken, or an idea? Write to <a href="mailto:support@tessergames.com"
+        >support@tessergames.com</a
+      > — it goes straight to the person who made the game.
+    </p>
+
+    <p class="email">
+      <a href="mailto:support@tessergames.com">support@tessergames.com</a>
+    </p>
+
+    <p class="mono">Usually within a few days.</p>
+
+    <SectionRule />
+
+    <section class="policies">
+      <h2>Privacy policies</h2>
+      <ul>
+        {
+          policies.map((policy) => (
+            <li>
+              <a href={`/privacy/${policy.data.game}`}>{policy.data.title}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .lede {
+    margin-top: var(--s-6);
+    font-size: var(--t-body-lg);
+  }
+
+  .email {
+    margin-top: var(--s-8);
+    font-size: var(--t-h2);
+  }
+
+  .email a {
+    text-decoration: none;
+  }
+
+  .mono {
+    margin-top: var(--s-3);
+    margin-bottom: var(--s-16);
+  }
+
+  .policies {
+    padding-top: var(--s-12);
+  }
+
+  .policies ul {
+    margin-top: var(--s-4);
+    padding-left: var(--s-6);
+  }
+
+  .policies li + li {
+    margin-top: var(--s-2);
+  }
+</style>

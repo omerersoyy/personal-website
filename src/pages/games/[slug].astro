@@ -1,0 +1,264 @@
+---
+/**
+ * /games/[slug] — the game page (01-PAGES.md §5).
+ *
+ * Its only job is to make the install decision easy, by showing the mechanic
+ * rather than describing it.
+ */
+import { getCollection, render } from "astro:content";
+import { Image } from "astro:assets";
+import Base from "../../layouts/Base.astro";
+import Prose from "../../components/Prose.astro";
+import StoreBadges from "../../components/StoreBadges.astro";
+import TesseraGrid from "../../components/TesseraGrid.astro";
+import SectionRule from "../../components/SectionRule.astro";
+
+export async function getStaticPaths() {
+  const games = await getCollection("games");
+  return games.map((game) => ({ params: { slug: game.id }, props: { game } }));
+}
+
+const { game } = Astro.props;
+const { Content } = await render(game);
+const {
+  title,
+  tagline,
+  status,
+  releaseDate,
+  platforms,
+  appStoreUrl,
+  playStoreUrl,
+  cover,
+  loop,
+  screenshots,
+} = game.data;
+
+const live = status === "live";
+const platformLabel = platforms
+  .map((p) => (p === "ios" ? "iOS" : "Android"))
+  .join(", ");
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  name: title,
+  description: tagline,
+  applicationCategory: "GameApplication",
+  operatingSystem: platformLabel,
+  author: { "@type": "Organization", name: "Tesser" },
+  publisher: { "@type": "Organization", name: "Tesser" },
+  ...(releaseDate ? { datePublished: releaseDate } : {}),
+  ...(live
+    ? {
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
+        },
+      }
+    : {}),
+};
+---
+
+<Base title={`${title} — Tesser`} description={tagline} image={cover.src}>
+  <script
+    slot="head"
+    type="application/ld+json"
+    set:html={JSON.stringify(jsonLd)}
+  />
+
+  <!-- 1. Hero — the mechanic, moving. Bottom edge breaks at 17° (00 §6). -->
+  <section class="hero">
+    {
+      loop ? (
+        <video
+          class="media"
+          src={loop}
+          poster={cover.src}
+          autoplay
+          muted
+          loop
+          playsinline
+          width="1280"
+          height="720"
+        />
+      ) : (
+        <Image
+          class="media"
+          src={cover}
+          alt={`${title} cover art`}
+          width={1600}
+          height={900}
+          loading="eager"
+        />
+      )
+    }
+    <div class="hero-text wrap">
+      <h1>{title}</h1>
+      <p class="tagline">{tagline}</p>
+    </div>
+  </section>
+
+  <!-- 2. Install, first of two. -->
+  <section class="wrap install">
+    {
+      live ? (
+        <StoreBadges appStore={appStoreUrl} playStore={playStoreUrl} />
+      ) : (
+        <p class="soon">Coming soon to the App Store and Google Play.</p>
+      )
+    }
+  </section>
+
+  <!-- 3. The mechanic — the heart of the page. -->
+  <section class="wrap section">
+    <h2>The mechanic</h2>
+    <Prose class="mechanic">
+      <Content />
+    </Prose>
+  </section>
+
+  {
+    screenshots.length > 0 && (
+      <section class="wrap section">
+        <h2 class="visually-hidden">Screenshots</h2>
+        <TesseraGrid min="220px">
+          {screenshots.map((shot) => (
+            <Image
+              class="shot"
+              src={shot.src}
+              alt={shot.alt}
+              width={540}
+              densities={[1, 2]}
+              loading="lazy"
+            />
+          ))}
+        </TesseraGrid>
+      </section>
+    )
+  }
+
+  <div class="wrap"><SectionRule /></div>
+
+  <!-- 5. Details. -->
+  <section class="wrap section details">
+    <div>
+      <h2>Details</h2>
+      <table class="mono">
+        <tbody>
+          <tr><th scope="row">Platforms</th><td>{platformLabel}</td></tr>
+          {releaseDate && <tr><th scope="row">Released</th><td>{releaseDate}</td></tr>}
+          <tr><th scope="row">Price</th><td>Free, with ads</td></tr>
+          <tr><th scope="row">Developer</th><td>Tesser</td></tr>
+        </tbody>
+      </table>
+      <p class="links">
+        <a href={`/privacy/${game.id}`}>Privacy policy</a> · <a href="/support">Support</a>
+      </p>
+    </div>
+
+    <div class="install-again">
+      {
+        live ? (
+          <StoreBadges appStore={appStoreUrl} playStore={playStoreUrl} />
+        ) : (
+          <p class="soon">Coming soon to the App Store and Google Play.</p>
+        )
+      }
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    position: relative;
+    --rise: var(--fold-rise);
+  }
+
+  .media {
+    width: 100%;
+    height: clamp(320px, 56svh, 620px);
+    object-fit: cover;
+    object-position: top;
+    background: var(--c-surface);
+    /* Bottom edge only: breaks at the centre and falls outward. */
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - var(--rise)),
+      50% 100%,
+      0 calc(100% - var(--rise))
+    );
+  }
+
+  .hero-text {
+    margin-top: var(--s-8);
+  }
+
+  .hero-text h1 {
+    font-size: var(--t-h1);
+  }
+
+  .tagline {
+    margin-top: var(--s-3);
+    color: var(--c-mist);
+    font-size: var(--t-body-lg);
+    max-width: var(--measure);
+  }
+
+  .install {
+    margin-top: var(--s-8);
+  }
+
+  .soon {
+    color: var(--c-mist);
+    font-size: var(--t-small);
+  }
+
+  .mechanic {
+    margin-top: var(--s-6);
+  }
+
+  .shot {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    background: var(--c-surface);
+  }
+
+  .details {
+    display: grid;
+    gap: var(--s-8);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    align-items: start;
+  }
+
+  table {
+    margin-top: var(--s-6);
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 34ch;
+  }
+
+  th,
+  td {
+    text-align: left;
+    padding: var(--s-2) 0;
+    border-bottom: 1px solid var(--c-line);
+    font-weight: 400;
+  }
+
+  th {
+    color: var(--c-mist);
+  }
+
+  td {
+    color: var(--c-paper);
+  }
+
+  .links {
+    margin-top: var(--s-6);
+    font-size: var(--t-small);
+  }
+</style>

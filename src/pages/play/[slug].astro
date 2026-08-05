@@ -1,0 +1,71 @@
+---
+/**
+ * /play/[slug] — the same door, one game only (01-PAGES.md §4).
+ * For campaigns promoting a specific game: tessergames.com/play/beaster.
+ */
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import Lockup from "../../components/Lockup.astro";
+import PlayCard from "../../components/PlayCard.astro";
+
+export async function getStaticPaths() {
+  const games = await getCollection("games");
+  return games.map((game) => ({ params: { slug: game.id }, props: { game } }));
+}
+
+const { game } = Astro.props;
+---
+
+<Base title={`Play ${game.data.title}`} noindex chrome={false}>
+  <div class="play">
+    <a href="/" class="top" aria-label="Tesser — home">
+      <Lockup variant="horizontal" size={24} />
+    </a>
+
+    <h1 class="visually-hidden">Play {game.data.title}</h1>
+
+    <ul class="list">
+      <PlayCard game={game} />
+    </ul>
+
+    <a href="/play" class="back">All Tesser games</a>
+  </div>
+</Base>
+
+<style>
+  .play {
+    min-height: 100svh;
+    max-width: 440px;
+    margin-inline: auto;
+    padding: var(--s-6) var(--s-4) var(--s-8);
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: var(--s-6);
+  }
+
+  .top {
+    display: inline-flex;
+    text-decoration: none;
+  }
+
+  .list {
+    width: 100%;
+    display: grid;
+    gap: var(--s-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .back {
+    font-family: var(--f-mono);
+    font-size: var(--t-small);
+    color: var(--c-mist);
+    text-decoration: none;
+  }
+
+  .back:hover {
+    color: var(--c-accent);
+  }
+</style>

@@ -1,0 +1,30 @@
+---
+/**
+ * TesseraGrid — the mosaic (00-FOUNDATION.md §7.2). Equal cells, auto-fit.
+ * Used for game cards, press-kit files and screenshots.
+ */
+interface Props {
+  /** Minimum cell width. */
+  min?: string;
+  /** Render as a list when the cells are a list of things. */
+  as?: "div" | "ul";
+  class?: string;
+}
+
+const { min = "260px", as: Tag = "div", class: className } = Astro.props;
+---
+
+<Tag class:list={["tessera", className]} style={`--min:${min}`}>
+  <slot />
+</Tag>
+
+<style>
+  .tessera {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--min), 1fr));
+    gap: var(--s-4);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+</style>

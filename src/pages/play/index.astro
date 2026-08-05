@@ -1,0 +1,73 @@
+---
+/**
+ * /play — the link-in-bio page (01-PAGES.md §4).
+ *
+ * This is the URL in every social bio. It is opened almost entirely on phones
+ * from a bio tap, so every store button has to be reachable without scrolling
+ * on a 375×667 screen. No hero, no FoldReveal, no video: a door, not a room.
+ */
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import Lockup from "../../components/Lockup.astro";
+import PlayCard from "../../components/PlayCard.astro";
+
+const games = (await getCollection("games")).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+---
+
+<Base title="Play Tesser games" noindex chrome={false}>
+  <div class="play">
+    <a href="/" class="top" aria-label="Tesser — home">
+      <Lockup variant="horizontal" size={24} />
+    </a>
+
+    <!-- The page is a list of doors; the heading exists for structure, not
+         decoration, so it is announced but not drawn. -->
+    <h1 class="visually-hidden">Play Tesser games</h1>
+
+    <ul class="list">
+      {games.map((game) => <PlayCard game={game} />)}
+    </ul>
+
+    <a href="/" class="back">tessergames.com</a>
+  </div>
+</Base>
+
+<style>
+  .play {
+    min-height: 100svh;
+    max-width: 440px;
+    margin-inline: auto;
+    padding: var(--s-6) var(--s-4) var(--s-8);
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: var(--s-6);
+  }
+
+  .top {
+    display: inline-flex;
+    text-decoration: none;
+  }
+
+  .list {
+    width: 100%;
+    display: grid;
+    gap: var(--s-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .back {
+    font-family: var(--f-mono);
+    font-size: var(--t-small);
+    color: var(--c-mist);
+    text-decoration: none;
+  }
+
+  .back:hover {
+    color: var(--c-accent);
+  }
+</style>

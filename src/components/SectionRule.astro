@@ -1,0 +1,23 @@
+---
+/**
+ * SectionRule — a 1px rule that breaks at the centre at 17°, the same fold as
+ * the mark (00-FOUNDATION.md §6). Decorative; never announced.
+ */
+---
+
+<div class="rule" role="presentation" aria-hidden="true"></div>
+
+<style>
+  .rule {
+    height: calc(var(--fold-rise) + 1px);
+    background: var(--c-line);
+    clip-path: polygon(
+      0 var(--fold-rise),
+      50% 0,
+      100% var(--fold-rise),
+      100% calc(var(--fold-rise) + 1px),
+      50% 1px,
+      0 calc(var(--fold-rise) + 1px)
+    );
+  }
+</style>

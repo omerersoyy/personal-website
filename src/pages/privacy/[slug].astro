@@ -1,0 +1,81 @@
+---
+/**
+ * /privacy/[slug] — one policy per game (01-PAGES.md §8).
+ *
+ * These URLs are live links inside both store listings. Plain, fast, no JS.
+ * The text is carried over verbatim and is not rewritten here.
+ */
+import { getCollection, render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import Prose from "../../components/Prose.astro";
+
+export async function getStaticPaths() {
+  const policies = await getCollection("policies");
+  return policies.map((policy) => ({
+    params: { slug: policy.data.game },
+    props: { policy, all: policies },
+  }));
+}
+
+const { policy, all } = Astro.props;
+const { Content } = await render(policy);
+const others = all.filter((p) => p.data.game !== policy.data.game);
+---
+
+<Base
+  title={`Privacy Policy — ${policy.data.title} — Tesser`}
+  description={`Privacy policy for ${policy.data.title}, a Tesser game.`}
+>
+  <article class="wrap section">
+    <h1>Privacy Policy — {policy.data.title}</h1>
+    <p class="mono updated">Last updated: {policy.data.updated}</p>
+
+    <Prose class="body">
+      <Content />
+    </Prose>
+
+    <footer class="tail">
+      <p>
+        Questions about this policy: <a href="mailto:support@tessergames.com"
+          >support@tessergames.com</a
+        >
+      </p>
+      {
+        others.length > 0 && (
+          <p>
+            Other policies:{" "}
+            {others.map((p, i) => (
+              <>
+                {i > 0 && ", "}
+                <a href={`/privacy/${p.data.game}`}>{p.data.title}</a>
+              </>
+            ))}
+          </p>
+        )
+      }
+    </footer>
+  </article>
+</Base>
+
+<style>
+  .updated {
+    margin-top: var(--s-3);
+  }
+
+  .body {
+    margin-top: var(--s-12);
+  }
+
+  .tail {
+    max-width: var(--measure);
+    margin-top: var(--s-16);
+    padding-top: var(--s-6);
+    border-top: 1px solid var(--c-line);
+    font-size: var(--t-small);
+    color: var(--c-mist);
+  }
+
+  .tail p + p {
+    margin-top: var(--s-2);
+  }
+</style>

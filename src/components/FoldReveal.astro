@@ -1,0 +1,116 @@
+---
+/**
+ * FoldReveal — seeing through the wall (00-FOUNDATION.md §7.1).
+ *
+ * Two stacked layers. Wherever the pointer goes, the top layer is pierced and
+ * the motion underneath shows through. The site demonstrates its idea rather
+ * than describing it.
+ *
+ * Used in exactly one place: the home page hero. Repeat it elsewhere and it
+ * stops being a signature.
+ *
+ * At rest the hole sits at the centre of the element — that is also the state
+ * on touch, without JS, and under prefers-reduced-motion. Slotted content is
+ * expected to keep the centre clear; `--reveal-void` gives the diameter to
+ * leave empty.
+ *
+ * Four slots:
+ *   bottom — what shows through the hole
+ *   top    — the wall itself; masked, so the hole erases it
+ *   over   — above the mask, never erased
+ *   reveal — the inverse: visible ONLY inside the hole. Desktop only; on
+ *            touch there is no pointer to hunt with, so it stays fully
+ *            visible there.
+ */
+---
+
+<div class="fold-reveal" data-fold-reveal>
+  <div class="layer bottom" aria-hidden="true">
+    <slot name="bottom" />
+  </div>
+  <div class="layer top">
+    <slot name="top" />
+  </div>
+  <div class="layer over">
+    <slot name="over" />
+  </div>
+  <div class="layer reveal">
+    <slot name="reveal" />
+  </div>
+</div>
+
+<script src="../scripts/fold-reveal.js"></script>
+
+<style>
+  .fold-reveal {
+    position: relative;
+    display: grid;
+    isolation: isolate;
+    /* --x/--y are updated by fold-reveal.js; the centre defaults survive
+       without JS. */
+    --x: 50%;
+    --y: 50%;
+    --r: 250px;
+    /* The mask is fully opaque again at 78% of --r, so this is the diameter
+       content must stay out of. The margin is deliberate. */
+    --reveal-void: calc(var(--r) * 1.8);
+  }
+
+  .layer {
+    grid-area: 1 / 1;
+  }
+
+  .bottom {
+    z-index: 0;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+  }
+
+  .top {
+    z-index: 1;
+    background: var(--c-ink);
+    /* The edge is deliberately short. A long fade reads as a glow, which is
+       on the §11 never-list, and it smears whatever sits behind it. This is a
+       hole cut in a wall, so the cut is nearly hard. */
+    mask-image: radial-gradient(
+      circle var(--r) at var(--x) var(--y),
+      transparent 62%,
+      #000 78%
+    );
+  }
+
+  .over {
+    z-index: 2;
+    /* The wall below is what reacts to the pointer; this layer must not
+       intercept it. */
+    pointer-events: none;
+  }
+
+  .over :global(a),
+  .over :global(button) {
+    pointer-events: auto;
+  }
+
+  .reveal {
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  /* Only where there is a pointer to hunt with. On touch the layer is
+     unmasked, so its content simply reads as part of the hero. */
+  @media (min-width: 640px) and (pointer: fine) {
+    .reveal {
+      mask-image: radial-gradient(
+        circle var(--r) at var(--x) var(--y),
+        #000 62%,
+        transparent 78%
+      );
+    }
+  }
+
+  @media (max-width: 639px) {
+    .fold-reveal {
+      --r: 135px;
+    }
+  }
+</style>

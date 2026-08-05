@@ -1,0 +1,48 @@
+---
+/**
+ * Lockup — mark plus wordmark, from the brand source files. The wordmark's
+ * 0.30em tracking lives inside this SVG and belongs to the logo only; it is
+ * never repeated in headings (00-FOUNDATION.md §4).
+ */
+import horizontalSvg from "../brand/tesser-lockup-horizontal.svg?raw";
+import stackedSvg from "../brand/tesser-lockup-stacked.svg?raw";
+import { inlineSvg } from "../brand/svg";
+
+interface Props {
+  variant?: "horizontal" | "stacked";
+  /** Rendered height in px. Header uses ~28. */
+  size?: number;
+  label?: string;
+  class?: string;
+}
+
+const {
+  variant = "horizontal",
+  size = 28,
+  label,
+  class: className,
+} = Astro.props;
+
+const svg = inlineSvg(variant === "stacked" ? stackedSvg : horizontalSvg, {
+  class: "lockup",
+  label,
+});
+---
+
+<span
+  class:list={["lockup-box", className]}
+  style={`--lockup-size:${size}px`}
+  set:html={svg}
+/>
+
+<style>
+  .lockup-box {
+    display: inline-flex;
+    color: var(--c-paper);
+  }
+
+  .lockup-box :global(.lockup) {
+    height: var(--lockup-size);
+    width: auto;
+  }
+</style>

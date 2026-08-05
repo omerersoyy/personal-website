@@ -1,0 +1,40 @@
+---
+/**
+ * Mark — the Tesser fold. Inlined SVG, flat paths, no masks or strokes.
+ * Below 24px the two-tone mark muddies, so it switches to the mono variant
+ * automatically (00-FOUNDATION.md §8).
+ */
+import markSvg from "../brand/tesser-mark.svg?raw";
+import markMonoSvg from "../brand/tesser-mark-mono.svg?raw";
+import { inlineSvg } from "../brand/svg";
+
+interface Props {
+  /** Rendered height in px. */
+  size?: number;
+  /** Force the single-tone variant. Below 24px this happens on its own. */
+  mono?: boolean;
+  /** Set when the mark stands alone and must be announced. */
+  label?: string;
+}
+
+const { size = 32, mono, label } = Astro.props;
+const useMono = mono ?? size < 24;
+const svg = inlineSvg(useMono ? markMonoSvg : markSvg, {
+  class: "mark",
+  label,
+});
+---
+
+<span class="mark-box" style={`--mark-size:${size}px`} set:html={svg} />
+
+<style>
+  .mark-box {
+    display: inline-flex;
+    color: var(--c-green);
+  }
+
+  .mark-box :global(.mark) {
+    height: var(--mark-size);
+    width: auto;
+  }
+</style>

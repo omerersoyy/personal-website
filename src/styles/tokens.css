@@ -1,0 +1,54 @@
+/* tokens.css — the only place colours and system constants are defined.
+   No raw hex values anywhere else. See 00-FOUNDATION.md §4. */
+
+:root {
+  /* Colour — green is identity, purple is interaction */
+  --c-green: #3ee68a; /* mark, brand surfaces */
+  --c-green-dark: #1e9a5c; /* right half of the fold */
+  --c-accent: #8b5cf6; /* links, buttons, hover, selected state */
+  --c-accent-soft: #6d45c9; /* accent hover / pressed */
+  --c-ink: #0c0f13; /* page background */
+  --c-surface: #14181e; /* cards */
+  --c-surface-2: #1b2129; /* card hover */
+  --c-line: #242a31; /* rules and borders */
+  --c-paper: #f2f4f6; /* body text */
+  --c-mist: #8a9099; /* secondary text */
+
+  /* Type */
+  --f-sans: "Space Grotesk", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --t-hero: clamp(2.5rem, 6vw, 4.5rem);
+  --t-h1: clamp(2rem, 4.5vw, 3rem);
+  --t-h2: clamp(1.375rem, 2.5vw, 1.75rem);
+  --t-body-lg: 1.125rem;
+  --t-body: 1rem;
+  --t-small: 0.8125rem;
+
+  /* Spacing — 4px base */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-6: 1.5rem;
+  --s-8: 2rem;
+  --s-12: 3rem;
+  --s-16: 4rem;
+  --s-24: 6rem;
+  --s-32: 8rem;
+
+  /* System constants */
+  --fold-angle: 17deg; /* §6 — the mark's fold angle; the site's only slope */
+  --fold-rise: 14px; /* how far the folded edge rises */
+  --radius: 16px;
+  --radius-lg: 24px;
+  --measure: 68ch; /* max line length for text */
+  --wrap: 1080px; /* content width */
+}
+
+/* Below 640px a 14px rise reads as skew rather than fold. */
+@media (max-width: 639px) {
+  :root {
+    --fold-rise: 8px;
+  }
+}

@@ -1,0 +1,100 @@
+---
+/**
+ * StoreBadges — official App Store / Google Play badges from public/badges/.
+ * Renders nothing when neither URL is given.
+ *
+ * The official badge artwork cannot be redistributed here; it is downloaded
+ * from Apple and Google (see public/badges/README.md). Until a badge file is
+ * present the link renders as a plain text button, so the page is never
+ * broken and never shows a fake badge. Existence is checked at build time.
+ */
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
+interface Props {
+  appStore?: string;
+  playStore?: string;
+  /** Badge height in px. Minimum 44 keeps the touch target legal on /play. */
+  height?: number;
+  class?: string;
+}
+
+const { appStore, playStore, height = 44, class: className } = Astro.props;
+
+const badgeDir = new URL("../../public/badges/", import.meta.url);
+const hasBadge = (file: string) =>
+  existsSync(fileURLToPath(new URL(file, badgeDir)));
+
+const stores = [
+  {
+    url: appStore,
+    file: "app-store.svg",
+    label: "Download on the App Store",
+    text: "App Store",
+  },
+  {
+    url: playStore,
+    file: "google-play.png",
+    label: "Get it on Google Play",
+    text: "Google Play",
+  },
+].filter((s) => !!s.url);
+---
+
+{
+  stores.length > 0 && (
+    <div class:list={["badges", className]} style={`--badge-h:${height}px`}>
+      {stores.map((store) =>
+        hasBadge(store.file) ? (
+          <a href={store.url} class="badge">
+            <img
+              src={`/badges/${store.file}`}
+              alt={store.label}
+              height={height}
+              loading="lazy"
+            />
+          </a>
+        ) : (
+          <a href={store.url} class="badge badge-text">
+            {store.text}
+          </a>
+        ),
+      )}
+    </div>
+  )
+}
+
+<style>
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    align-items: center;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--badge-h);
+    text-decoration: none;
+  }
+
+  .badge img {
+    height: var(--badge-h);
+    width: auto;
+  }
+
+  .badge-text {
+    padding-inline: var(--s-4);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    color: var(--c-paper);
+    font-size: var(--t-small);
+    transition: border-color 0.15s ease;
+  }
+
+  .badge-text:hover {
+    border-color: var(--c-accent);
+    color: var(--c-paper);
+  }
+</style>

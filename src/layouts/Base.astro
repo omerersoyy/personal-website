@@ -1,0 +1,214 @@
+---
+/**
+ * Base — head, meta, header, footer. Every page renders through this.
+ * Fonts are self-hosted (latin, weights 400/500) so nothing is requested
+ * from a third party.
+ */
+import "@fontsource/space-grotesk/latin-400.css";
+import "@fontsource/space-grotesk/latin-500.css";
+import "@fontsource/space-grotesk/latin-700.css";
+import "@fontsource/jetbrains-mono/latin-400.css";
+import "../styles/tokens.css";
+import "../styles/global.css";
+
+import Lockup from "../components/Lockup.astro";
+import SectionRule from "../components/SectionRule.astro";
+import { NAV, SITE, SOCIAL } from "../site";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Absolute path, e.g. /games/beaster/cover.webp. Defaults to the site OG image. */
+  image?: string;
+  /** /play and its sub-pages exist for humans arriving from a bio, not search. */
+  noindex?: boolean;
+  /** /play is a door, not a room: no nav, no footer links. */
+  chrome?: boolean;
+}
+
+const {
+  title,
+  description = "Solo game developer. Beaster and inout parkour — small mobile games built around a single unusual mechanic.",
+  image = "/og-1200x630.png",
+  noindex = false,
+  chrome = true,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL(image, Astro.site);
+const year = new Date().getFullYear();
+
+const nav = NAV;
+const social = SOCIAL;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180.png" />
+    <meta name="theme-color" content="#0C0F13" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Tesser" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    {
+      chrome && (
+        <header class="site-header">
+          <div class="wrap header-inner">
+            <a href="/" class="home" aria-label="Tesser — home">
+              <Lockup variant="horizontal" size={26} />
+            </a>
+            <nav aria-label="Primary">
+              <ul>
+                {nav.map((item) => (
+                  <li>
+                    <a href={item.href}>{item.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+        </header>
+      )
+    }
+
+    <main id="main">
+      <slot />
+    </main>
+
+    {
+      chrome && (
+        <footer class="site-footer">
+          <div class="wrap">
+            <SectionRule />
+            <div class="footer-inner">
+              <a href="/" class="home" aria-label="Tesser — home">
+                <Lockup variant="horizontal" size={20} />
+              </a>
+              <nav aria-label="Footer">
+                <ul>
+                  {nav.map((item) => (
+                    <li>
+                      <a href={item.href}>{item.label}</a>
+                    </li>
+                  ))}
+                  <li>
+                    <a href="/privacy/beaster">Privacy</a>
+                  </li>
+                </ul>
+              </nav>
+              <nav aria-label="Social">
+                <ul>
+                  {social.map((item) => (
+                    <li>
+                      <a href={item.href} rel="me noopener">
+                        {item.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+            <p class="mono colophon">
+              © {year} {SITE.name} · <a href={`mailto:${SITE.support}`}>{SITE.support}</a>
+            </p>
+          </div>
+        </footer>
+      )
+    }
+  </body>
+</html>
+
+<style>
+  .skip {
+    position: absolute;
+    left: -9999px;
+    top: var(--s-2);
+    z-index: 10;
+    background: var(--c-surface);
+    padding: var(--s-2) var(--s-4);
+    border-radius: var(--radius);
+  }
+
+  .skip:focus {
+    left: var(--s-4);
+  }
+
+  .home {
+    display: inline-flex;
+    text-decoration: none;
+  }
+
+  .site-header {
+    padding-block: var(--s-6);
+  }
+
+  .header-inner,
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-6);
+    flex-wrap: wrap;
+  }
+
+  nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: var(--t-small);
+  }
+
+  nav a {
+    text-decoration: none;
+    color: var(--c-mist);
+  }
+
+  nav a:hover {
+    color: var(--c-accent);
+  }
+
+  .site-footer {
+    padding-block: var(--s-12) var(--s-8);
+    margin-top: var(--s-24);
+  }
+
+  .footer-inner {
+    padding-top: var(--s-8);
+  }
+
+  .colophon {
+    margin-top: var(--s-8);
+  }
+
+  .colophon a {
+    color: var(--c-mist);
+    text-decoration: none;
+  }
+
+  .colophon a:hover {
+    color: var(--c-accent);
+  }
+</style>

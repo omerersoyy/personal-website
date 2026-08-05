@@ -1,0 +1,215 @@
+---
+/**
+ * /press — the press kit (01-PAGES.md §6).
+ * A YouTuber or journalist finds what they need in 30 seconds. No long prose.
+ */
+import { statSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import FoldCard from "../components/FoldCard.astro";
+import TesseraGrid from "../components/TesseraGrid.astro";
+import SectionRule from "../components/SectionRule.astro";
+
+const games = (await getCollection("games")).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+/** File sizes are read at build time so the listing can never go stale. */
+const publicDir = new URL("../../public/", import.meta.url);
+function size(path: string): string | null {
+  try {
+    const bytes = statSync(
+      fileURLToPath(new URL(path.replace(/^\//, ""), publicDir)),
+    ).size;
+    return bytes > 1024 * 1024
+      ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+      : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  } catch {
+    return null;
+  }
+}
+
+const downloads = [
+  {
+    href: "/press/tesser-mark.svg",
+    name: "Mark (SVG)",
+    note: "Two-tone, flat paths",
+  },
+  {
+    href: "/press/tesser-mark-mono.svg",
+    name: "Mark, mono (SVG)",
+    note: "Single tone, currentColor",
+  },
+  {
+    href: "/press/tesser-lockup-horizontal.svg",
+    name: "Lockup, horizontal (SVG)",
+    note: "Mark + wordmark",
+  },
+  {
+    href: "/press/tesser-lockup-stacked.svg",
+    name: "Lockup, stacked (SVG)",
+    note: "For splash and print",
+  },
+  {
+    href: "/press/mark-1024.png",
+    name: "Mark (PNG)",
+    note: "1024px, transparent",
+  },
+  {
+    href: "/press/lockup-horizontal-2048.png",
+    name: "Lockup (PNG)",
+    note: "2048px, transparent",
+  },
+];
+
+const boilerplate =
+  "Tesser is a one-person game studio. Its games are built around a single unusual spatial mechanic — moving through walls instead of around them. Beaster is out now on iOS and Android; inout parkour follows in 2026.";
+---
+
+<Base
+  title="Press — Tesser"
+  description="Press kit for Tesser: logos, screenshots, fact sheet and contact."
+>
+  <div class="wrap section">
+    <h1>Press</h1>
+
+    <section class="block">
+      <h2>Boilerplate</h2>
+      <p class="boilerplate measure">{boilerplate}</p>
+      <button class="copy" type="button" data-copy={boilerplate}>Copy boilerplate</button>
+    </section>
+
+    <SectionRule />
+
+    <section class="block">
+      <h2>Downloads</h2>
+      <TesseraGrid as="ul" min="240px" class="files">
+        {
+          downloads.map((file) => (
+            <FoldCard as="li" class="file">
+              <a href={file.href} download>
+                {file.name}
+              </a>
+              <p class="note">{file.note}</p>
+              {size(file.href) && <p class="mono">{size(file.href)}</p>}
+            </FoldCard>
+          ))
+        }
+      </TesseraGrid>
+      <p class="note all">
+        <!-- TODO: build the archive before launch (02-MIGRATION-LAUNCH.md). -->
+        Screenshot bundles and trailer links are added as each game ships.
+      </p>
+    </section>
+
+    <SectionRule />
+
+    <section class="block">
+      <h2>Fact sheet</h2>
+      <table class="mono facts">
+        <tbody>
+          <tr><th scope="row">Developer</th><td>Tesser (Ömer Ersoy)</td></tr>
+          <tr><th scope="row">Based in</th><td>Turkey</td></tr>
+          <tr><th scope="row">Platforms</th><td>iOS, Android</td></tr>
+          <tr>
+            <th scope="row">Games</th>
+            <td>
+              {
+                games.map((game, i) => (
+                  <>
+                    {i > 0 && ", "}
+                    <a href={`/games/${game.id}`}>{game.data.title}</a>
+                  </>
+                ))
+              }
+            </td>
+          </tr>
+          <tr><th scope="row">Contact</th><td>hello@tessergames.com</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <SectionRule />
+
+    <section class="block">
+      <h2>Contact</h2>
+      <p class="email">hello@tessergames.com</p>
+      <button class="copy" type="button" data-copy="hello@tessergames.com">Copy address</button>
+    </section>
+  </div>
+
+  <script src="../scripts/copy-email.js"></script>
+</Base>
+
+<style>
+  .block {
+    padding-block: var(--s-12);
+  }
+
+  .boilerplate {
+    margin-top: var(--s-4);
+    font-size: var(--t-body-lg);
+  }
+
+  .copy {
+    margin-top: var(--s-4);
+    background: none;
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    color: var(--c-paper);
+    font-size: var(--t-small);
+    padding: var(--s-2) var(--s-4);
+    min-height: 44px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+
+  .copy:hover {
+    border-color: var(--c-accent);
+  }
+
+  .files {
+    margin-top: var(--s-6);
+  }
+
+  .file a {
+    text-decoration: none;
+    font-size: var(--t-body-lg);
+  }
+
+  .note {
+    color: var(--c-mist);
+    font-size: var(--t-small);
+    margin-top: var(--s-1);
+  }
+
+  .note.all {
+    margin-top: var(--s-6);
+  }
+
+  .facts {
+    margin-top: var(--s-6);
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 48ch;
+  }
+
+  .facts th,
+  .facts td {
+    text-align: left;
+    padding: var(--s-2) 0;
+    border-bottom: 1px solid var(--c-line);
+    font-weight: 400;
+  }
+
+  .facts th {
+    color: var(--c-mist);
+    padding-right: var(--s-6);
+  }
+
+  .email {
+    margin-top: var(--s-4);
+    font-size: var(--t-h2);
+  }
+</style>

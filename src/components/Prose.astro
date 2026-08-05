@@ -1,0 +1,70 @@
+---
+/**
+ * Prose — long-form text. Privacy policies and game descriptions render here.
+ * Line length is capped at --measure; nothing else is decorated.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={["prose", className]}>
+  <slot />
+</div>
+
+<style>
+  .prose {
+    max-width: var(--measure);
+  }
+
+  .prose :global(> * + *) {
+    margin-top: var(--s-4);
+  }
+
+  .prose :global(h2) {
+    margin-top: var(--s-12);
+  }
+
+  .prose :global(h3) {
+    margin-top: var(--s-8);
+  }
+
+  .prose :global(ul),
+  .prose :global(ol) {
+    padding-left: var(--s-6);
+  }
+
+  .prose :global(li + li) {
+    margin-top: var(--s-2);
+  }
+
+  .prose :global(strong) {
+    font-weight: 500;
+  }
+
+  .prose :global(code) {
+    font-family: var(--f-mono);
+    font-size: 0.9em;
+  }
+
+  .prose :global(hr) {
+    border: 0;
+    border-top: 1px solid var(--c-line);
+    margin-block: var(--s-8);
+  }
+
+  .prose :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--t-small);
+  }
+
+  .prose :global(th),
+  .prose :global(td) {
+    text-align: left;
+    padding: var(--s-2) var(--s-3);
+    border-bottom: 1px solid var(--c-line);
+  }
+</style>
