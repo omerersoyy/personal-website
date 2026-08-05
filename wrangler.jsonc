@@ -1,0 +1,14 @@
+{
+  // Static-assets-only Worker: there is no server code, just the files Astro
+  // builds. Cloudflare's Workers flow replaced Pages for new projects, so the
+  // spec's "Cloudflare Pages" is this, under a newer name.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tessergames",
+  "compatibility_date": "2026-08-05",
+  "assets": {
+    "directory": "./dist",
+    // Serves dist/404.html for unknown paths instead of a bare Cloudflare
+    // error. public/_redirects still handles /download -> /play.
+    "not_found_handling": "404-page"
+  }
+}
