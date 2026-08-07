@@ -7,6 +7,7 @@ import { getCollection } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import Lockup from "../../components/Lockup.astro";
 import PlayCard from "../../components/PlayCard.astro";
+import StoreEscape from "../../components/StoreEscape.astro";
 
 export async function getStaticPaths() {
   const games = await getCollection("games");
@@ -23,6 +24,8 @@ const { game } = Astro.props;
     </a>
 
     <h1 class="visually-hidden">Play {game.data.title}</h1>
+
+    <StoreEscape />
 
     <ul class="list">
       <PlayCard game={game} />

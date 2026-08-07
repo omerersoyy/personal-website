@@ -25,18 +25,28 @@ const badgeDir = new URL("../../public/badges/", import.meta.url);
 const hasBadge = (file: string) =>
   existsSync(fileURLToPath(new URL(file, badgeDir)));
 
+// Store identifiers pulled out of the URLs, so the escape hatch in
+// scripts/store-escape.js can rebuild a native-scheme link without the id being
+// written down twice. See StoreEscape.astro for why that is needed at all.
+const appId = appStore?.match(/\/id(\d+)/)?.[1];
+const pkg = playStore?.match(/[?&]id=([\w.]+)/)?.[1];
+
 const stores = [
   {
     url: appStore,
     file: "app-store.svg",
     label: "Download on the App Store",
     text: "App Store",
+    store: "apple",
+    ref: appId,
   },
   {
     url: playStore,
     file: "google-play.png",
     label: "Get it on Google Play",
     text: "Google Play",
+    store: "google",
+    ref: pkg,
   },
 ].filter((s) => !!s.url);
 ---
@@ -46,7 +56,12 @@ const stores = [
     <div class:list={["badges", className]} style={`--badge-h:${height}px`}>
       {stores.map((store) =>
         hasBadge(store.file) ? (
-          <a href={store.url} class="badge">
+          <a
+            href={store.url}
+            class="badge"
+            data-store={store.store}
+            data-store-ref={store.ref}
+          >
             <img
               src={`/badges/${store.file}`}
               alt={store.label}
@@ -55,7 +70,12 @@ const stores = [
             />
           </a>
         ) : (
-          <a href={store.url} class="badge badge-text">
+          <a
+            href={store.url}
+            class="badge badge-text"
+            data-store={store.store}
+            data-store-ref={store.ref}
+          >
             {store.text}
           </a>
         ),

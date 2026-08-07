@@ -1,0 +1,65 @@
+---
+/**
+ * StoreEscape — the notice shown when /play is opened inside an app's own
+ * browser (Instagram, TikTok, Facebook…).
+ *
+ * Those webviews cannot hand an App Store link to the App Store: on iOS
+ * apps.apple.com redirects to itms-appss://, which an in-app browser is not
+ * permitted to open, so the tap silently does nothing. A link shortener does
+ * not help — the redirect ends up in the same webview.
+ *
+ * scripts/store-escape.js tries the best native route it can and unhides this,
+ * which is the part that always works. It stays visible after a tap on purpose:
+ * if the native route failed, the visitor is left looking at the answer.
+ *
+ * Rendered hidden, so it costs nothing in a normal browser and never flashes.
+ */
+---
+
+<p class="escape" data-store-escape hidden>
+  <span class="mark" aria-hidden="true">!</span>
+  <span>
+    Instagram’s browser can block store links.
+    <b data-store-escape-how>Open this page in your browser.</b>
+  </span>
+</p>
+
+<script src="../scripts/store-escape.js"></script>
+
+<style>
+  .escape {
+    display: flex;
+    gap: var(--s-3);
+    align-items: flex-start;
+    width: 100%;
+    padding: var(--s-3) var(--s-4);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    color: var(--c-mist);
+    font-size: var(--t-small);
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .escape b {
+    display: block;
+    color: var(--c-paper);
+    font-weight: 500;
+  }
+
+  .mark {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    border-radius: 50%;
+    background: var(--c-green);
+    color: var(--c-ink);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+  }
+</style>
