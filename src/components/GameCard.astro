@@ -25,7 +25,7 @@ const statusLabel =
   status === "live" ? "Out now" : status === "soon" ? "Coming soon" : "In development";
 ---
 
-<FoldCard as="article" class="game-card">
+<FoldCard as="article" class="game-card" data-blob-box>
   <Image
     class="cover"
     src={cover}
@@ -39,7 +39,9 @@ const statusLabel =
   <div class="body">
     <div class="head">
       <h3>
-        <a class="title-link" href={`/games/${game.id}`}>{title}</a>
+        <a class="title-link" href={`/games/${game.id}`}>
+          {title}<span class="arrow" aria-hidden="true">→</span>
+        </a>
       </h3>
       <span class:list={["status", status]}>{statusLabel}</span>
     </div>
@@ -55,24 +57,100 @@ const statusLabel =
 </FoldCard>
 
 <style>
-  .game-card {
+  /* Registered so the fold can be animated. Unregistered custom properties
+     are not interpolated, so --rise would snap between the two states. */
+  @property --rise {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 14px;
+  }
+
+  /* The card's own surface is drawn by ::before, one pixel inside, so the
+     element itself is left showing as a hairline outline. A real border or an
+     inset shadow follows the rectangle and gets sliced off by clip-path,
+     which leaves the fold looking broken; this follows the fold instead. */
+  /* `article.game-card` rather than `.game-card`: FoldCard sets the surface
+     colour on `.fold-card`, its stylesheet lands after this one, and at equal
+     specificity it would win — leaving the outline invisible. The element
+     selector settles it without !important. */
+  article.game-card {
     position: relative;
     display: flex;
     flex-direction: column;
     gap: var(--s-4);
+    background: var(--c-line);
     transition:
-      background-color 0.15s ease,
-      transform 0.15s ease;
+      --rise 180ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      background-color 180ms ease,
+      transform 180ms ease;
+    animation: card-in 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
   }
 
-  .game-card:hover {
-    background: var(--c-surface-2);
+  .game-card::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    z-index: 0;
+    background: var(--c-surface);
+    clip-path: inherit;
+    transition: background-color 180ms ease;
+  }
+
+  .game-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Motion derived from the identity: on hover the card folds a little
+     harder, rather than performing a generic lift. */
+  .game-card:hover,
+  .game-card:focus-within {
+    --rise: 18px;
+    background: var(--c-accent);
     transform: translateY(-2px);
+  }
+
+  .game-card:hover::before,
+  .game-card:focus-within::before {
+    background: var(--c-surface-2);
+  }
+
+  /* One mount transition, staggered. Not scroll-triggered — that is on the
+     §11 never-list. */
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+
+  .game-card:nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .game-card:nth-child(3) {
+    animation-delay: 120ms;
+  }
+
+  .game-card:nth-child(4) {
+    animation-delay: 180ms;
   }
 
   .title-link {
     color: inherit;
     text-decoration: none;
+  }
+
+  .arrow {
+    display: inline-block;
+    margin-left: 0.4em;
+    color: var(--c-accent);
+    transition: transform 160ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .game-card:hover .arrow,
+  .game-card:focus-within .arrow {
+    transform: translateX(6px);
   }
 
   /* The card-wide hit area. Sits under the store badges, which are lifted. */
@@ -86,8 +164,10 @@ const statusLabel =
     outline: none;
   }
 
-  .game-card:has(.title-link:focus-visible) {
-    box-shadow: inset 0 0 0 2px var(--c-accent);
+  /* An inset shadow follows the rectangle and clip-path slices it, so focus
+     is shown by thickening the outline the card already has. */
+  .game-card:has(.title-link:focus-visible)::before {
+    inset: 3px;
   }
 
   .stores {

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-24 -24 248 257" width="248" height="257">
+  <!--
+    The cut edge, drawn as a hairline so the aperture reads as a hole punched
+    through a surface rather than a light shone onto one. Same geometry and
+    same padded viewBox as aperture-soft.svg, so the two register exactly.
+
+    Colour is baked because CSS cannot reach inside a background image; it is
+    the green token at low opacity. If that token changes, change it here too.
+    (No double hyphens in this comment: they are invalid inside XML comments
+    and strict SVG parsers reject the file outright.)
+  -->
+  <path
+    fill="none"
+    stroke="#3ee68a"
+    stroke-opacity="0.22"
+    stroke-width="2"
+    d="M100 0 L29.3 9.9 A34 34 0 0 0 0 43.6 L0 174.9 A34 34 0 0 0 38.7 208.6 L100 200 L161.3 208.6 A34 34 0 0 0 200 174.9 L200 43.6 A34 34 0 0 0 170.7 9.9 Z"
+  />
+</svg>

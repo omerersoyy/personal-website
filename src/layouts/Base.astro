@@ -52,6 +52,14 @@ const social = SOCIAL;
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
 
+    {/* Set before first paint. Anything that only makes sense once scripts
+        have run — the hero's masked headline, the blob — is gated on this, so
+        without JS those pieces fall back to a readable static state instead of
+        being hidden by a mask that will never move. */}
+    <script is:inline>
+      document.documentElement.classList.add("js");
+    </script>
+
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon-180.png" />

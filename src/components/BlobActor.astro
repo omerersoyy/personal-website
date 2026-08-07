@@ -1,0 +1,54 @@
+---
+/**
+ * BlobActor — inout parkour's menu blob, loose on the page.
+ *
+ * The game's menu actor treats the visible buttons as game boxes and runs
+ * their perimeter. Here it does the same to real elements: anything marked
+ * `data-blob-box`. Add the attribute to a box and the blob will find it.
+ *
+ * Purely decorative: it cannot be clicked, cannot cover a link, and is hidden
+ * from assistive technology. Under prefers-reduced-motion it never starts.
+ */
+---
+
+<script src="../scripts/blob.js"></script>
+
+<style is:global>
+  /* Page coordinates. The host sits at the document origin with no height of
+     its own, so the blob scrolls with the page and nothing needs recomputing
+     on scroll — only on resize. */
+  .blob-host {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 60;
+    opacity: 0;
+    transition: opacity 400ms ease;
+  }
+
+  .blob {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    /* Sheet is 9 frames of 16px; drawn at 30px each. */
+    background-image: url("/blob-sheet.png");
+    background-repeat: no-repeat;
+    background-size: 270px 30px;
+    image-rendering: pixelated;
+    /* The position is the blob's centre, as it is in the game. */
+    margin: -15px 0 0 -15px;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob-host {
+      display: none;
+    }
+  }
+</style>

@@ -1,20 +1,29 @@
 ---
 /**
- * FoldReveal — seeing through the wall (00-FOUNDATION.md §7.1).
+ * FoldReveal — seeing through the wall (00-FOUNDATION.md §7.1, revised by
+ * 03-HERO-AND-CARDS.md §2).
  *
  * Two stacked layers. Wherever the pointer goes, the top layer is pierced and
  * the motion underneath shows through. The site demonstrates its idea rather
  * than describing it.
  *
+ * The hole is the mark's folded-card silhouette, not a circle. A circle reads
+ * as a flashlight; this reads as a Tesser-shaped hole cut through a wall,
+ * which is the thing both games are about. See public/aperture-soft.svg.
+ *
  * Used in exactly one place: the home page hero. Repeat it elsewhere and it
  * stops being a signature.
  *
  * At rest the hole sits at the centre of the element — that is also the state
- * on touch, without JS, and under prefers-reduced-motion. Slotted content is
- * expected to keep the centre clear; `--reveal-void` gives the diameter to
- * leave empty.
+ * without JS and under prefers-reduced-motion. Slotted content is expected to
+ * keep the centre clear; `--reveal-void` gives the height to leave empty.
  *
- * Four slots:
+ * On touch there is no mask at all (§3): the aperture is a pointer
+ * affordance, and following a finger means the effect only exists underneath
+ * the hand covering it. There the hero is the media full-bleed behind a
+ * scrim, clipped by the fold silhouette — the same idea stated differently.
+ *
+ * Five slots:
  *   bottom — what shows through the hole
  *   top    — the wall itself; masked, so the hole erases it
  *   over   — above the mask, never erased
@@ -28,14 +37,16 @@
   <div class="layer bottom" aria-hidden="true">
     <slot name="bottom" />
   </div>
+  <div class="layer haze" aria-hidden="true"></div>
   <div class="layer top">
     <slot name="top" />
   </div>
-  <div class="layer over">
-    <slot name="over" />
-  </div>
+  <div class="layer ring" aria-hidden="true"></div>
   <div class="layer reveal">
     <slot name="reveal" />
+  </div>
+  <div class="layer over">
+    <slot name="over" />
   </div>
 </div>
 
@@ -46,14 +57,17 @@
     position: relative;
     display: grid;
     isolation: isolate;
-    /* --x/--y are updated by fold-reveal.js; the centre defaults survive
-       without JS. */
+    /* --x/--y are written by fold-reveal.js in PIXELS, and only once the
+       pointer has actually moved — see `.tracking` below. */
     --x: 50%;
     --y: 50%;
-    --r: 250px;
-    /* The mask is fully opaque again at 78% of --r, so this is the diameter
-       content must stay out of. The margin is deliberate. */
-    --reveal-void: calc(var(--r) * 1.8);
+    --r: clamp(300px, 32vw, 480px);
+    /* The aperture SVG is padded for its blur, so the artwork is 248 × 257
+       and the card sits dead centre of it. Height therefore trails width by
+       this ratio, and both halves are what centre the shape on the pointer. */
+    --r-h: calc(var(--r) * 1.0363);
+    /* Diameter content must stay out of. The margin is deliberate. */
+    --reveal-void: calc(var(--r) * 1.12);
   }
 
   .layer {
@@ -61,26 +75,83 @@
   }
 
   .bottom {
+    position: relative;
     z-index: 0;
     overflow: hidden;
     border-radius: var(--radius-lg);
   }
 
+  /* Shared placement: the aperture centred on the pointer. */
+  .haze,
+  .top,
+  .ring,
+  .reveal {
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+  }
+
+  /* The wall. Two mask layers composited to subtract: the full-bleed
+     gradient is the wall, the aperture is the hole taken out of it.
+
+     At rest the position is the keyword `center`, NOT a calc on 50%: a
+     percentage in mask-position aligns that point of the image with the same
+     point of the box, so `calc(50% - r/2)` shifts the aperture half its own
+     width off-centre. The pixel form below is only correct once JS is feeding
+     real pixels, so it is gated behind `.tracking`. */
   .top {
-    z-index: 1;
+    z-index: 2;
     background: var(--c-ink);
-    /* The edge is deliberately short. A long fade reads as a glow, which is
-       on the §11 never-list, and it smears whatever sits behind it. This is a
-       hole cut in a wall, so the cut is nearly hard. */
-    mask-image: radial-gradient(
-      circle var(--r) at var(--x) var(--y),
-      transparent 62%,
-      #000 78%
-    );
+    mask-image: url("/aperture-soft.svg"), linear-gradient(#000, #000);
+    mask-size: var(--r) auto, 100% 100%;
+    mask-position: center, 0 0;
+    mask-composite: exclude;
+    -webkit-mask-image: url("/aperture-soft.svg"), linear-gradient(#000, #000);
+    -webkit-mask-size: var(--r) auto, 100% 100%;
+    -webkit-mask-position: center, 0 0;
+    -webkit-mask-composite: xor;
+  }
+
+  .fold-reveal.tracking .top {
+    mask-position:
+      calc(var(--x) - var(--r) / 2) calc(var(--y) - var(--r-h) / 2),
+      0 0;
+    -webkit-mask-position:
+      calc(var(--x) - var(--r) / 2) calc(var(--y) - var(--r-h) / 2),
+      0 0;
+  }
+
+  /* A blurred band just inside the cut, so what shows through sharpens
+     toward the middle and smears at the edge. Backdrop blur rather than a
+     duplicated layer: nothing is rendered twice.
+
+     Desktop only — blur over playing video is expensive on phones, and
+     there is no pointer there anyway. */
+  .haze {
+    z-index: 1;
+    display: none;
+  }
+
+  .ring {
+    z-index: 3;
+    pointer-events: none;
+    background-image: url("/aperture-ring.svg");
+    background-repeat: no-repeat;
+    background-size: var(--r) auto;
+    background-position: center;
+  }
+
+  .fold-reveal.tracking .ring {
+    background-position:
+      calc(var(--x) - var(--r) / 2) calc(var(--y) - var(--r-h) / 2);
+  }
+
+  .reveal {
+    z-index: 4;
+    pointer-events: none;
   }
 
   .over {
-    z-index: 2;
+    z-index: 5;
     /* The wall below is what reacts to the pointer; this layer must not
        intercept it. */
     pointer-events: none;
@@ -91,26 +162,91 @@
     pointer-events: auto;
   }
 
-  .reveal {
-    z-index: 3;
-    pointer-events: none;
+  /* Only where there is a pointer to hunt with — and only once scripts have
+     run. Without JS the aperture can never move, so a headline that lives
+     inside it would be unreachable; there it simply stays visible. */
+  @media (min-width: 640px) and (pointer: fine) {
+    :global(html.js) .reveal {
+      mask-image: url("/aperture-soft.svg");
+      mask-size: var(--r) auto;
+      mask-position: center;
+      -webkit-mask-image: url("/aperture-soft.svg");
+      -webkit-mask-size: var(--r) auto;
+      -webkit-mask-position: center;
+    }
+
+    :global(html.js) .fold-reveal.tracking .reveal {
+      mask-position: calc(var(--x) - var(--r) / 2)
+        calc(var(--y) - var(--r-h) / 2);
+      -webkit-mask-position: calc(var(--x) - var(--r) / 2)
+        calc(var(--y) - var(--r-h) / 2);
+    }
+
+    /* A narrow blurred band just inside the cut. Narrow on purpose: widen it
+       and it stops being a soft edge and becomes a halo. */
+    .haze {
+      display: block;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      /* A ring: the aperture at full size, minus the aperture at 84%. */
+      mask-image: url("/aperture-soft.svg"), url("/aperture-soft.svg");
+      mask-size: var(--r) auto, calc(var(--r) * 0.84) auto;
+      mask-position: center, center;
+      mask-composite: exclude;
+      -webkit-mask-image: url("/aperture-soft.svg"), url("/aperture-soft.svg");
+      -webkit-mask-size: var(--r) auto, calc(var(--r) * 0.84) auto;
+      -webkit-mask-position: center, center;
+      -webkit-mask-composite: xor;
+    }
+
+    .fold-reveal.tracking .haze {
+      mask-position:
+        calc(var(--x) - var(--r) / 2) calc(var(--y) - var(--r-h) / 2),
+        calc(var(--x) - var(--r) * 0.42) calc(var(--y) - var(--r-h) * 0.42);
+      -webkit-mask-position:
+        calc(var(--x) - var(--r) / 2) calc(var(--y) - var(--r-h) / 2),
+        calc(var(--x) - var(--r) * 0.42) calc(var(--y) - var(--r-h) * 0.42);
+    }
   }
 
-  /* Only where there is a pointer to hunt with. On touch the layer is
-     unmasked, so its content simply reads as part of the hero. */
-  @media (min-width: 640px) and (pointer: fine) {
-    .reveal {
-      mask-image: radial-gradient(
-        circle var(--r) at var(--x) var(--y),
-        #000 62%,
-        transparent 78%
+  /* Touch: no aperture at all. The media is the hero, held inside the fold
+     silhouette, and the words sit on a scrim over it. */
+  @media (max-width: 639px), (pointer: coarse) {
+    .fold-reveal {
+      --reveal-void: 0px;
+      clip-path: polygon(
+        0 var(--fold-rise),
+        50% 0,
+        100% var(--fold-rise),
+        100% calc(100% - var(--fold-rise)),
+        50% 100%,
+        0 calc(100% - var(--fold-rise))
+      );
+    }
+
+    .haze,
+    .top,
+    .ring {
+      display: none;
+    }
+
+    .bottom {
+      border-radius: 0;
+    }
+
+    .bottom::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--c-ink) 88%, transparent) 0%,
+        color-mix(in srgb, var(--c-ink) 42%, transparent) 46%,
+        color-mix(in srgb, var(--c-ink) 92%, transparent) 100%
       );
     }
   }
 
-  @media (max-width: 639px) {
-    .fold-reveal {
-      --r: 135px;
-    }
-  }
+  /* Nothing to add: with no pointer tracking the aperture simply stays at
+     `center`, which is the resting state everything else is built around. */
 </style>

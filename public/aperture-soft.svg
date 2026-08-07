@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-24 -24 248 257" width="248" height="257">
+  <!--
+    The hero aperture: the mark's folded-card silhouette, without the S.
+    Used as a CSS mask image in FoldReveal.astro — you look through a
+    Tesser-shaped hole in the wall, not through a spotlight.
+
+    The blur feathers the cut so the edge dissolves instead of slicing.
+    stdDeviation stays small on purpose: a long fade reads as a glow, which
+    is on the 00-FOUNDATION.md §11 never-list.
+
+    The viewBox is padded by 24 on every side so the blur is not clipped.
+    Geometry matches tesser-mark.svg (200 × 209) exactly.
+  -->
+  <filter id="feather" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+    <feGaussianBlur stdDeviation="3.4" />
+  </filter>
+  <path
+    filter="url(#feather)"
+    fill="#fff"
+    d="M100 0 L29.3 9.9 A34 34 0 0 0 0 43.6 L0 174.9 A34 34 0 0 0 38.7 208.6 L100 200 L161.3 208.6 A34 34 0 0 0 200 174.9 L200 43.6 A34 34 0 0 0 170.7 9.9 Z"
+  />
+</svg>

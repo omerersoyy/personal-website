@@ -5,10 +5,10 @@
  * covers land with the pages phase.
  */
 import { getCollection } from "astro:content";
-import { Image } from "astro:assets";
 import Base from "../layouts/Base.astro";
 import FoldReveal from "../components/FoldReveal.astro";
-import Lockup from "../components/Lockup.astro";
+import Tunnel from "../components/Tunnel.astro";
+import BlobActor from "../components/BlobActor.astro";
 import GameCard from "../components/GameCard.astro";
 import TesseraGrid from "../components/TesseraGrid.astro";
 import SectionRule from "../components/SectionRule.astro";
@@ -17,10 +17,6 @@ import { SITE, SOCIAL } from "../site";
 const games = (await getCollection("games")).sort(
   (a, b) => a.data.order - b.data.order,
 );
-
-// One tile per game, centred behind the wall. Repeating them to fill the
-// width turns the hero into wallpaper.
-const tiles = games.map((game) => game.data.cover);
 
 // Organization schema, home page only (02-MIGRATION-LAUNCH.md §5).
 const jsonLd = {
@@ -42,29 +38,30 @@ const jsonLd = {
   />
   <section class="wrap section hero-wrap">
     <FoldReveal>
-      <!-- TODO: the games' loop videos replace these tiles.
-           Square tiles, cropped from the top — the same framing as the game
-           cards. Full-height stretching blows the games' own HUD up to the
-           size of the page, which reads as interface rather than motion. -->
-      <div slot="bottom" class="mosaic" aria-hidden="true">
-        {
-          tiles.map((cover) => (
-            <Image src={cover} alt="" width={420} height={420} densities={[1, 2]} loading="eager" />
-          ))
-        }
+      <!-- Behind the wall: Beaster's corridor, seen from inside it. -->
+      <div slot="bottom" class="stage" aria-hidden="true">
+        <Tunnel />
       </div>
 
       <!-- The wall. Empty: everything readable lives in the layer above, so
            the hole erases the wall and not the words. -->
       <div slot="top" class="wall"></div>
 
-      <!-- The lockup is always there. -->
-      <div slot="over" class="hero">
-        <div class="above">
-          <Lockup variant="stacked" size={96} label="Tesser" />
+      <!-- The blob's first platform is the aperture itself: it runs the rim of
+           the hole until the pointer arrives, then bolts into the page. This
+           element is invisible and exists only to give the blob the hole's
+           geometry — the hole is a mask, and a mask has no rect to walk.
+
+           It is only ever a starting perch (`start`), never a jump target: the
+           aperture moves with the pointer while this rect does not, so coming
+           back to it would mean orbiting nothing. -->
+      <div slot="over" class="over-stack">
+        <div class="aperture-box" data-blob-box="start" aria-hidden="true"></div>
+        <div class="hero">
+          <div class="above"></div>
+          <div class="void" aria-hidden="true"></div>
+          <div class="below"></div>
         </div>
-        <div class="void" aria-hidden="true"></div>
-        <div class="below"></div>
       </div>
 
       <!-- The headline is found, not presented: on desktop it exists only
@@ -102,6 +99,8 @@ const jsonLd = {
       </p>
     </div>
   </section>
+
+  <BlobActor />
 </Base>
 
 <style>
@@ -142,23 +141,46 @@ const jsonLd = {
     max-width: 20ch;
   }
 
-  .mosaic {
-    display: grid;
-    grid-auto-flow: column;
-    justify-content: center;
-    align-content: center;
-    gap: var(--s-4);
+  .stage {
     height: 100%;
     overflow: hidden;
   }
 
-  .mosaic img {
-    width: clamp(180px, 26vw, 340px);
-    height: auto;
-    aspect-ratio: 1;
-    object-fit: cover;
-    object-position: top;
-    border-radius: var(--radius);
+  .over-stack {
+    display: contents;
+  }
+
+  /* A box for the blob to live on, and the only piece of the hero that is
+     drawn ON the wall rather than behind it. Sized so the perimeter walk is
+     long enough to read as a walk, small enough to stay out of the way. */
+  /* The aperture's own rectangle, at rest. Never painted — the hole is already
+     drawn by the mask; this only carries its geometry so the blob has a rim to
+     run. The numbers come from the aperture artwork: it is 248 × 257 with the
+     card sitting 200 × 209 in the middle of it, so the card is 0.806 of the
+     mask's width and 0.8425 of it in height. */
+  .aperture-box {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(var(--r) * 0.806);
+    height: calc(var(--r) * 0.8425);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* No aperture on touch, so no rim to run: without this the blob would orbit
+     an invisible rectangle in the middle of the hero. */
+  @media (max-width: 639px), (pointer: coarse) {
+    .aperture-box {
+      display: none;
+    }
+  }
+
+  @media (max-width: 639px), (pointer: coarse) {
+    .hero h1 {
+      max-width: 16ch;
+      text-align: center;
+    }
   }
 
   .games {

@@ -1,0 +1,36 @@
+---
+/**
+ * Tunnel — Beaster's corridor as the hero's back layer.
+ *
+ * What you see through the aperture: the inside of the cube chain the game is
+ * played in, rushing past. Beaster's character is a 3D model and has no place
+ * on a web page, but the space it moves through does — and the game cards
+ * below already carry the art.
+ *
+ * A 2D canvas projection, no WebGL, no library. See scripts/tunnel.js.
+ */
+---
+
+<canvas class="tunnel" data-tunnel aria-hidden="true"></canvas>
+
+<script src="../scripts/tunnel.js"></script>
+
+<style>
+  .tunnel {
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* The corridor should not read as a lit box floating on the page: it is
+       the space behind the wall, so it fades out at its own edges. */
+    mask-image: radial-gradient(
+      ellipse 78% 78% at 50% 50%,
+      #000 40%,
+      transparent 100%
+    );
+    -webkit-mask-image: radial-gradient(
+      ellipse 78% 78% at 50% 50%,
+      #000 40%,
+      transparent 100%
+    );
+  }
+</style>
