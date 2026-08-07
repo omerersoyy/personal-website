@@ -3,7 +3,7 @@
   // builds. Cloudflare's Workers flow replaced Pages for new projects, so the
   // spec's "Cloudflare Pages" is this, under a newer name.
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "tessergames",
+  "name": "personal-website",
   "compatibility_date": "2026-08-05",
   "assets": {
     "directory": "./dist",
