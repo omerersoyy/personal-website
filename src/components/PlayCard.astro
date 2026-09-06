@@ -39,7 +39,13 @@ const thumb = icon ?? cover;
 
   {
     live ? (
-      <StoreBadges appStore={appStoreUrl} playStore={playStoreUrl} height={44} class="stores" />
+      <StoreBadges
+        appStore={appStoreUrl}
+        playStore={playStoreUrl}
+        height={44}
+        align="center"
+        class="stores"
+      />
     ) : (
       <p class="soon">
         Coming soon · <a href={`/games/${game.id}`}>About {title}</a>

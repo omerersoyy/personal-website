@@ -16,10 +16,22 @@ interface Props {
   playStore?: string;
   /** Badge height in px. Minimum 44 keeps the touch target legal on /play. */
   height?: number;
+  /**
+   * Row alignment. "start" next to prose, where the badges are one more thing
+   * in a left-aligned column; "center" on /play, where the card is a standalone
+   * door and a left-hugging row leaves an obvious hole on the right.
+   */
+  align?: "start" | "center";
   class?: string;
 }
 
-const { appStore, playStore, height = 44, class: className } = Astro.props;
+const {
+  appStore,
+  playStore,
+  height = 44,
+  align = "start",
+  class: className,
+} = Astro.props;
 
 // Resolved from the project root, not from import.meta.url: in a production
 // build this module's URL points into Vite's output, so "../../public" walked
@@ -56,7 +68,10 @@ const stores = [
 
 {
   stores.length > 0 && (
-    <div class:list={["badges", className]} style={`--badge-h:${height}px`}>
+    <div
+      class:list={["badges", className]}
+      style={`--badge-h:${height}px;--badge-align:${align === "center" ? "center" : "flex-start"}`}
+    >
       {stores.map((store) =>
         hasBadge(store.file) ? (
           <a
@@ -91,11 +106,14 @@ const stores = [
   .badges {
     display: flex;
     flex-wrap: wrap;
-    /* --s-3 → --s-4 was a 4px move and read as no change at all; the badges
-       are ~132px and ~148px wide, so the gap has to be big enough to register
-       against them. */
-    gap: var(--s-6);
+    /* Row gap / column gap. The badges are ~132px and ~148px wide, so a 12px
+       column gap disappeared against them entirely; 32 reads as deliberate and
+       still leaves ~48px either side of a centred row in a 360px card. They
+       stack below ~380px — 132 + 148 + 32 does not fit — and stacked they want
+       a tighter 16, not the same 32. */
+    gap: var(--s-4) var(--s-8);
     align-items: center;
+    justify-content: var(--badge-align, flex-start);
   }
 
   .badge {
