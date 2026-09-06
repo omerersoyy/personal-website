@@ -14,9 +14,11 @@
 //             sometimes and costs nothing to try, but the honest fix is to tell
 //             the visitor how to leave: the ••• menu → Open in browser.
 //
-// So: try the best native route, and show the instruction either way. The
-// banner is the part that always works, which is why it is not hidden again
-// after a tap.
+// So: try the best native route, and hold the instruction back until that
+// route is seen to have failed. It used to be shown on arrival, which meant
+// every visitor — including the ones for whom the tap would have worked — was
+// told the download might not work before they had tried it. Once shown it is
+// not hidden again: at that point it is the only thing that helps.
 
 const UA = navigator.userAgent || "";
 const IN_APP =
@@ -29,9 +31,15 @@ const ANDROID = /Android/i.test(UA);
 
 const banner = document.querySelector("[data-store-escape]");
 
-if (IN_APP) {
-  document.documentElement.classList.add("in-app-browser");
-  if (banner) {
+// Shown only once a handoff has visibly failed. A successful one sends the
+// page to the background, so "still in the foreground a beat later" is the
+// signal — a bare timer would fire on every slow-but-working app switch.
+const REVEAL_AFTER = 1200;
+
+function revealAfterFailedHandoff() {
+  if (!banner) return;
+  setTimeout(() => {
+    if (document.visibilityState !== "visible") return; // the store took over
     const how = banner.querySelector("[data-store-escape-how]");
     if (how) {
       how.textContent = IOS
@@ -39,7 +47,11 @@ if (IN_APP) {
         : "Tap ⋮ at the top right, then Open in browser.";
     }
     banner.hidden = false;
-  }
+  }, REVEAL_AFTER);
+}
+
+if (IN_APP) {
+  document.documentElement.classList.add("in-app-browser");
 
   for (const link of document.querySelectorAll("a[data-store]")) {
     link.addEventListener("click", (ev) => {
@@ -68,6 +80,7 @@ if (IN_APP) {
         window.location.href =
           `intent://details?${params}#Intent;scheme=market;package=com.android.vending;` +
           `S.browser_fallback_url=${encodeURIComponent(link.href)};end`;
+        revealAfterFailedHandoff();
         return;
       }
 
@@ -76,10 +89,12 @@ if (IN_APP) {
         // Same scheme, same query: `ct` (App Analytics campaign) and Apple's
         // own `itsc*` marketing-tools tokens ride along untouched.
         const search = query.toString();
-        // Best effort. If the webview refuses the scheme nothing happens, which
-        // is exactly why the banner above is already on screen.
+        // Best effort. If the webview refuses the scheme nothing happens at
+        // all — no error, no navigation — so the reveal below is the only way
+        // the visitor ever learns why.
         window.location.href =
           `itms-apps://apps.apple.com/app/id${ref}${search ? `?${search}` : ""}`;
+        revealAfterFailedHandoff();
       }
     });
   }

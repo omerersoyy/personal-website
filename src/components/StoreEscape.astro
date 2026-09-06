@@ -8,9 +8,12 @@
  * permitted to open, so the tap silently does nothing. A link shortener does
  * not help — the redirect ends up in the same webview.
  *
- * scripts/store-escape.js tries the best native route it can and unhides this,
- * which is the part that always works. It stays visible after a tap on purpose:
- * if the native route failed, the visitor is left looking at the answer.
+ * scripts/store-escape.js tries the best native route it can, and only unhides
+ * this when that route is seen to have failed — the page is still in the
+ * foreground a beat after the tap. Showing it on arrival, as it did until
+ * 2026-09, greets every visitor with "this probably will not work" before they
+ * have tried anything, which is a bad trade for a route that usually works.
+ * Once shown it stays: the visitor is now looking at the only thing that helps.
  *
  * Rendered hidden, so it costs nothing in a normal browser and never flashes.
  */
@@ -27,6 +30,13 @@
 <script src="../scripts/store-escape.js"></script>
 
 <style>
+  /* `display: flex` below outranks the user agent's `[hidden] { display: none }`,
+     so without this the attribute does nothing and the notice shows to every
+     visitor in every browser — which is exactly what happened. */
+  .escape[hidden] {
+    display: none;
+  }
+
   .escape {
     display: flex;
     gap: var(--s-3);
