@@ -91,7 +91,10 @@ const stores = [
   .badges {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--s-4);
+    /* --s-3 → --s-4 was a 4px move and read as no change at all; the badges
+       are ~132px and ~148px wide, so the gap has to be big enough to register
+       against them. */
+    gap: var(--s-6);
     align-items: center;
   }
 
@@ -102,20 +105,12 @@ const stores = [
     text-decoration: none;
   }
 
+  /* Both files are edge to edge — google-play.png is 478×142 with no padding
+     inside it, app-store.svg is 119.66×40 — so one shared height is already
+     the correct optical match. Do not "compensate" one against the other. */
   .badge img {
     height: var(--badge-h);
     width: auto;
-  }
-
-  /* Google ships its badge with the required clear space baked into the file
-     (478×142, roughly a fifth of it padding); Apple's SVG is 119.66×40, edge to
-     edge. Rendered at one height Google's wordmark therefore comes out a fifth
-     smaller and floating in a gap. Scaling its box up matches the two logos
-     optically, and the negative block margin keeps the taller box from
-     stretching the row. */
-  .badge[data-store="google"] img {
-    height: calc(var(--badge-h) * 1.25);
-    margin-block: calc(var(--badge-h) * -0.125);
   }
 
   .badge-text {
