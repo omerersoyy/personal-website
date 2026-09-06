@@ -12,9 +12,15 @@ import Lockup from "../../components/Lockup.astro";
 import PlayCard from "../../components/PlayCard.astro";
 import StoreEscape from "../../components/StoreEscape.astro";
 
-const games = (await getCollection("games")).sort(
-  (a, b) => a.data.order - b.data.order,
-);
+// Live games only. A card that cannot be installed is dead weight on a page
+// whose whole job is to hand out store links — and worse when the page is the
+// destination of a paid ad, where the visitor arrived expecting to download
+// something. Unreleased games keep their own /games/[slug] page and are still
+// reachable at /play/[slug]; `order` still decides the sort, so a game shows up
+// here in its intended position the moment its status flips to "live".
+const games = (await getCollection("games"))
+  .filter((game) => game.data.status === "live")
+  .sort((a, b) => a.data.order - b.data.order);
 ---
 
 <Base title="Play Tesser games" noindex chrome={false}>

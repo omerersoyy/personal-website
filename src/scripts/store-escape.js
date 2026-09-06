@@ -47,21 +47,39 @@ if (IN_APP) {
       const ref = link.dataset.storeRef;
       if (!ref) return; // no id parsed: leave the normal link alone
 
+      // Both native routes are rebuilt from the id rather than from the href,
+      // so the campaign parameters have to be carried across by hand. Losing
+      // them here would be invisible and expensive: every install that came
+      // through an in-app browser — which is most of the paid traffic — would
+      // arrive at the store untagged and be filed as organic.
+      const query = new URL(link.href, location.href).searchParams;
+
       if (ANDROID && store === "google") {
         ev.preventDefault();
+        // Play reads the UTM campaign out of `referrer`. URLSearchParams
+        // re-encodes it, which is the form Play expects and is also what keeps
+        // any `;` inside it from terminating the intent's own `;`-separated
+        // fragment below.
+        const params = new URLSearchParams({ id: ref });
+        const referrer = query.get("referrer");
+        if (referrer) params.set("referrer", referrer);
         // Hands off to Play through Chrome, with the web page as the fallback
         // if the intent is refused.
         window.location.href =
-          `intent://details?id=${ref}#Intent;scheme=market;package=com.android.vending;` +
+          `intent://details?${params}#Intent;scheme=market;package=com.android.vending;` +
           `S.browser_fallback_url=${encodeURIComponent(link.href)};end`;
         return;
       }
 
       if (IOS && store === "apple") {
         ev.preventDefault();
+        // Same scheme, same query: `ct` (App Analytics campaign) and Apple's
+        // own `itsc*` marketing-tools tokens ride along untouched.
+        const search = query.toString();
         // Best effort. If the webview refuses the scheme nothing happens, which
         // is exactly why the banner above is already on screen.
-        window.location.href = `itms-apps://apps.apple.com/app/id${ref}`;
+        window.location.href =
+          `itms-apps://apps.apple.com/app/id${ref}${search ? `?${search}` : ""}`;
       }
     });
   }

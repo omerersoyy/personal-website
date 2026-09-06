@@ -9,7 +9,7 @@
  * broken and never shows a fake badge. Existence is checked at build time.
  */
 import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 
 interface Props {
   appStore?: string;
@@ -21,9 +21,12 @@ interface Props {
 
 const { appStore, playStore, height = 44, class: className } = Astro.props;
 
-const badgeDir = new URL("../../public/badges/", import.meta.url);
-const hasBadge = (file: string) =>
-  existsSync(fileURLToPath(new URL(file, badgeDir)));
+// Resolved from the project root, not from import.meta.url: in a production
+// build this module's URL points into Vite's output, so "../../public" walked
+// somewhere that does not exist and every badge silently fell back to the text
+// button — which is exactly what shipped once the real artwork was added.
+const badgeDir = join(process.cwd(), "public", "badges");
+const hasBadge = (file: string) => existsSync(join(badgeDir, file));
 
 // Store identifiers pulled out of the URLs, so the escape hatch in
 // scripts/store-escape.js can rebuild a native-scheme link without the id being
