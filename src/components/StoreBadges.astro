@@ -22,6 +22,12 @@ interface Props {
    * door and a left-hugging row leaves an obvious hole on the right.
    */
   align?: "start" | "center";
+  /**
+   * Let the badges span the full row once they no longer fit side by side.
+   * Only worth it where the badges are the point of the card (/play): stacked
+   * at their natural ~132px they sit marooned in the middle of a phone screen.
+   */
+  fill?: boolean;
   class?: string;
 }
 
@@ -30,6 +36,7 @@ const {
   playStore,
   height = 44,
   align = "start",
+  fill = false,
   class: className,
 } = Astro.props;
 
@@ -69,7 +76,7 @@ const stores = [
 {
   stores.length > 0 && (
     <div
-      class:list={["badges", className]}
+      class:list={["badges", { "badges-fill": fill }, className]}
       style={`--badge-h:${height}px;--badge-align:${align === "center" ? "center" : "flex-start"}`}
     >
       {stores.map((store) =>
@@ -143,5 +150,31 @@ const stores = [
   .badge-text:hover {
     border-color: var(--c-accent);
     color: var(--c-paper);
+  }
+
+  /* Below this width the two badges cannot share a row: the /play card gives
+     them viewport − 32 (page padding) − 48 (card padding), and side by side
+     they need 132 + 148 + 32 = 312. So 392 is where they start stacking, and
+     stacked is where full width earns its keep.
+
+     Equal width, not equal height: the artwork's aspect ratios differ (2.99 vs
+     3.37), so one of the two has to give. Stacked, the eye follows the left and
+     right edges — matching those and letting the heights differ by ~10px reads
+     far better than the reverse. */
+  @media (max-width: 391px) {
+    .badges-fill {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .badges-fill .badge {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .badges-fill .badge img {
+      width: 100%;
+      height: auto;
+    }
   }
 </style>

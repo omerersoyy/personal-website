@@ -44,6 +44,7 @@ const thumb = icon ?? cover;
         playStore={playStoreUrl}
         height={44}
         align="center"
+        fill
         class="stores"
       />
     ) : (
@@ -55,15 +56,33 @@ const thumb = icon ?? cover;
 </FoldCard>
 
 <style>
-  .play-card {
-    display: grid;
-    gap: var(--s-4);
-  }
-
+  /* The space under the header lives here, on .head itself, and it has to.
+   *
+   * Two separate traps sit on the obvious ways of writing this:
+   *
+   * 1. `.play-card { display: grid; gap: }` — this element carries both
+   *    .play-card and .fold-card, and FoldCard sets `display: block` on it.
+   *    Both are single-class selectors with Astro's scope attribute, so they
+   *    tie on specificity and source order decides; in the production bundle
+   *    FoldCard's stylesheet lands last, so the card stays a block and `gap`
+   *    does nothing. `astro dev` injects the two in the opposite order, which
+   *    is why that version looked right locally and collapsed to zero spacing
+   *    only on the built site.
+   *
+   * 2. `.play-card > * + *` — Astro scopes a component's selectors to that
+   *    component's own elements. The badge row comes from StoreBadges and
+   *    carries only StoreBadges' scope attribute, so the compiled selector
+   *    `> [data-astro-cid-…] + [data-astro-cid-…]` never matches it.
+   *
+   * .head is PlayCard's own element, so a margin on it is scoped correctly and
+   * needs no `display` to survive. It also spaces the "Coming soon" variant,
+   * which sits in the same slot.
+   */
   .head {
     display: flex;
     align-items: center;
     gap: var(--s-4);
+    margin-block-end: var(--s-4);
   }
 
   .icon {
