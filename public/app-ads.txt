@@ -1,0 +1,5 @@
+# app-ads.txt — Tesser (tessergames.com)
+# Authorized digital sellers for the mobile apps published by Ömer Ersoy / Tesser.
+# Spec: https://iabtechlab.com/ads-txt/
+
+google.com, pub-6728429691941918, DIRECT, f08c47fec0942fa0
