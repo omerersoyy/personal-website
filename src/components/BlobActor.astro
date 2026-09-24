@@ -26,6 +26,15 @@
     overflow: visible;
     pointer-events: none;
     z-index: 60;
+    /* The blob runs a card's OUTER lane, 24 px past its edge. On /play the cards
+       sit 16 px from the screen edge, so on the right-hand side the blob hung
+       8 px off the page and the whole page scrolled sideways (owner, 2026-09).
+       Clip the host horizontally — the page's own width — and leave it
+       unclipped vertically, where it must reach the whole document. `clip`
+       (unlike `hidden`) allows that split and adds nothing to the scroll area.
+       Engines without it get `hidden`, which on a 0-height host just means no
+       blob: better than a page that scrolls sideways. */
+    overflow: hidden;
     opacity: 0;
     transition: opacity 400ms ease;
   }
@@ -44,6 +53,13 @@
     /* The position is the blob's centre, as it is in the game. */
     margin: -15px 0 0 -15px;
     will-change: transform;
+  }
+
+  @supports (overflow-x: clip) {
+    .blob-host {
+      overflow: visible;
+      overflow-x: clip;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
