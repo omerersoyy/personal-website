@@ -1,8 +1,12 @@
 ---
 /**
  * PlayCard — one game on the link-in-bio page (01-PAGES.md §4).
- * Icon, title, tagline, then both store buttons side by side. Games that are
- * not live show "Coming soon" and a link to the game page instead.
+ * Icon, title, tagline, then the store buttons. Games that are not live show
+ * "Coming soon" and a link to the game page instead.
+ *
+ * `featured` (the first card, 2026-09): the game's loop runs across the top of
+ * the card, bleeding to its edges so the card's own 17° fold cuts the video's
+ * top edge. Only the featured card gets it — one moving thing on the page.
  */
 import type { CollectionEntry } from "astro:content";
 import { Image } from "astro:assets";
@@ -11,17 +15,54 @@ import StoreBadges from "./StoreBadges.astro";
 
 interface Props {
   game: CollectionEntry<"games">;
+  featured?: boolean;
 }
 
-const { game } = Astro.props;
-const { title, tagline, status, cover, icon, appStoreUrl, playStoreUrl } =
-  game.data;
+const { game, featured = false } = Astro.props;
+const {
+  title,
+  tagline,
+  status,
+  cover,
+  icon,
+  appStoreUrl,
+  playStoreUrl,
+  loop,
+  loopPoster,
+  flag,
+} = game.data;
 const live = status === "live";
 // The store icon is already square and rounded; a cover has to be cropped.
 const thumb = icon ?? cover;
+const showLoop = featured && !!loop;
 ---
 
-<FoldCard as="li" class="play-card">
+<FoldCard
+  as="li"
+  class:list={["play-card", { featured: showLoop }]}
+  data-blob-box
+  data-blob-surface="out"
+>
+  {
+    showLoop && (
+      <div class="media">
+        {flag && <p class="flag flag-over">{flag}</p>}
+        <video
+          src={loop}
+          poster={loopPoster}
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+          width="1080"
+          height="810"
+          aria-label={`${title} gameplay`}
+        />
+      </div>
+    )
+  }
+
   <div class="head">
     <Image
       class:list={["icon", { "is-icon": !!icon }]}
@@ -32,6 +73,7 @@ const thumb = icon ?? cover;
       densities={[1, 2]}
     />
     <div>
+      {flag && !showLoop && <p class="flag">{flag}</p>}
       <h2>{title}</h2>
       <p class="tagline">{tagline}</p>
     </div>
@@ -45,6 +87,8 @@ const thumb = icon ?? cover;
         height={44}
         align="center"
         fill
+        smart
+        soloHeight={featured ? 52 : 48}
         class="stores"
       />
     ) : (
@@ -54,6 +98,20 @@ const thumb = icon ?? cover;
     )
   }
 </FoldCard>
+
+<script>
+  // Reduced motion: the loop does not start, the poster stays. `autoplay` is
+  // already in the markup by the time this runs, so the video is stopped here
+  // rather than prevented — before its first frame on any real device.
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    for (const v of document.querySelectorAll<HTMLVideoElement>(
+      ".play-card video",
+    )) {
+      v.removeAttribute("autoplay");
+      v.pause();
+    }
+  }
+</script>
 
 <style>
   /* The space under the header lives here, on .head itself, and it has to.
@@ -85,6 +143,47 @@ const thumb = icon ?? cover;
     margin-block-end: var(--s-4);
   }
 
+  /* The loop fills the card's top edge to edge. The negative margins undo the
+   * FoldCard padding (which already includes --rise), so the video starts at
+   * the card's clipped top: the fold cuts it, nothing else does.
+   *
+   * Height follows the screen: the whole page — both cards' store buttons —
+   * still has to fit a 375×667 phone without scrolling (01-PAGES §4), so the
+   * video takes what is left and stops growing at 300 px. object-fit: cover
+   * trims the 4:3 source around its centre, which is where the runner is. */
+  .media {
+    position: relative;
+    margin: calc(-1 * (var(--s-6) + var(--rise))) calc(-1 * var(--s-6))
+      var(--s-4);
+    height: clamp(112px, calc(100svh - 500px), 300px);
+    /* The game's own sky, so the frame is never an empty grey box. */
+    background: #12142a;
+    overflow: hidden;
+  }
+
+  .media video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    image-rendering: pixelated;
+  }
+
+  /* On the featured card the loop already shows the game; the icon only has to
+     say "this is the one in the store", and does so smaller. */
+  .featured .icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .flag-over {
+    position: absolute;
+    left: var(--s-4);
+    bottom: var(--s-3);
+    margin: 0;
+    z-index: 1;
+  }
+
   .icon {
     flex: none;
     width: 64px;
@@ -98,9 +197,21 @@ const thumb = icon ?? cover;
   .icon.is-icon {
     object-position: center;
     border-radius: var(--radius);
-    background: none;
-    border-radius: var(--radius);
     background: var(--c-surface-2);
+  }
+
+  .flag {
+    display: inline-block;
+    margin-block-end: var(--s-1);
+    padding: 2px var(--s-2);
+    border-radius: 999px;
+    background: var(--c-green);
+    color: var(--c-ink);
+    font-family: var(--f-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   h2 {

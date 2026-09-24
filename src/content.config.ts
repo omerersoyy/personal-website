@@ -28,6 +28,12 @@ const games = defineCollection({
       // shown small (the /play cards). Falls back to the cover.
       icon: image().optional(),
       loop: z.string().optional(), // /games/<slug>/loop.mp4 — the mechanic, looping
+      // First frame of `loop`, shown before the video starts and instead of it
+      // under prefers-reduced-motion. /games/<slug>/loop-poster.webp
+      loopPoster: z.string().optional(),
+      // A short label over the title on /play while something is new, e.g.
+      // "New update". Remove it when the news is old.
+      flag: z.string().optional(),
       screenshots: z
         .array(z.object({ src: image(), alt: z.string() }))
         .default([]),

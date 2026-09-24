@@ -200,6 +200,11 @@ export function startBlob() {
         // A perch, not a destination: somewhere the blob may start but must
         // never jump back to. See the aperture box in index.astro.
         start: node.dataset.blobBox === "start",
+        // data-blob-surface="out": this box is walked on the outside only. The
+        // /play cards hold store badges, and Apple and Google both keep a
+        // quarter of the badge's height clear of other graphics; the inside
+        // lane runs 24 px in from the edge, which is where the badges sit.
+        outOnly: node.dataset.blobSurface === "out",
       });
     }
     // Start on a perch when there is one — otherwise anywhere.
@@ -287,7 +292,7 @@ export function startBlob() {
     scheduleAction();
     const r = Math.random();
     if (r < P_JUMP && boxes.length >= 2 && side === OUT) startJump();
-    else if (r < P_JUMP + P_FLIP) flip();
+    else if (r < P_JUMP + P_FLIP && !boxes[pi].outOnly) flip();
     // else keep running — the pauses between verbs are what make it calm.
   }
 

@@ -28,6 +28,15 @@ interface Props {
    * at their natural ~132px they sit marooned in the middle of a phone screen.
    */
   fill?: boolean;
+  /**
+   * One store, the visitor's own. On a phone whose platform is known (the
+   * `os-ios` / `os-android` class /play sets on <html> before first paint) only
+   * that store's badge is drawn, at `soloHeight`, with the other store as a
+   * plain text link under it. Everywhere else — desktop, unknown, no JS — both
+   * badges show as usual. See the badge rules below the markup.
+   */
+  smart?: boolean;
+  soloHeight?: number;
   class?: string;
 }
 
@@ -37,6 +46,8 @@ const {
   height = 44,
   align = "start",
   fill = false,
+  smart = false,
+  soloHeight = 56,
   class: className,
 } = Astro.props;
 
@@ -61,6 +72,7 @@ const stores = [
     text: "App Store",
     store: "apple",
     ref: appId,
+    also: "Also on the App Store",
   },
   {
     url: playStore,
@@ -69,15 +81,21 @@ const stores = [
     text: "Google Play",
     store: "google",
     ref: pkg,
+    also: "Also on Google Play",
   },
 ].filter((s) => !!s.url);
+const both = stores.length === 2;
 ---
 
 {
   stores.length > 0 && (
     <div
-      class:list={["badges", { "badges-fill": fill }, className]}
-      style={`--badge-h:${height}px;--badge-align:${align === "center" ? "center" : "flex-start"}`}
+      class:list={[
+        "badges",
+        { "badges-fill": fill, "badges-smart": smart && both },
+        className,
+      ]}
+      style={`--badge-h:${height}px;--badge-solo-h:${soloHeight}px;--badge-align:${align === "center" ? "center" : "flex-start"}`}
     >
       {stores.map((store) =>
         hasBadge(store.file) ? (
@@ -105,6 +123,18 @@ const stores = [
           </a>
         ),
       )}
+      {smart &&
+        both &&
+        stores.map((store) => (
+          <a
+            href={store.url}
+            class="also"
+            data-store={store.store}
+            data-store-ref={store.ref}
+          >
+            {store.also}
+          </a>
+        ))}
     </div>
   )
 }
@@ -145,6 +175,67 @@ const stores = [
     color: var(--c-paper);
     font-size: var(--t-small);
     transition: border-color 0.15s ease;
+  }
+
+  /* ---- smart: one badge, the visitor's own --------------------------------
+   *
+   * The official rules this has to keep (checked 2026-09):
+   *   Apple  — min 40 px on screen; clear space >= 1/4 of the badge height;
+   *            with other stores' badges, App Store first; never modified,
+   *            angled or animated.
+   *   Google — min 28 px on screen; clear space >= 1/4 of the height; with
+   *            other stores' badges, the Play badge the same size or larger.
+   * So: when both badges show they share one height and Apple leads (the
+   * default row above). When only one shows it is the only badge in the row —
+   * the other store is a plain text link, not a smaller badge, which is what
+   * would break Google's "same size or larger" — and the link sits more than a
+   * quarter of the badge's height below it. Nothing moves the artwork.
+   */
+  .also {
+    display: none;
+  }
+
+  :global(html.os-ios) .badges-smart,
+  :global(html.os-android) .badges-smart {
+    flex-direction: column;
+    align-items: center;
+    /* Clear space: 1/4 of the badge height is the floor (13 px at 52). */
+    gap: max(var(--s-4), calc(var(--badge-solo-h) / 4 + 2px));
+  }
+
+  :global(html.os-ios) .badges-smart .badge[data-store="google"],
+  :global(html.os-android) .badges-smart .badge[data-store="apple"] {
+    display: none;
+  }
+
+  :global(html.os-ios) .badges-smart .badge img,
+  :global(html.os-android) .badges-smart .badge img {
+    height: var(--badge-solo-h);
+    width: auto;
+  }
+
+  :global(html.os-ios) .badges-smart .badge,
+  :global(html.os-android) .badges-smart .badge {
+    min-height: var(--badge-solo-h);
+    width: auto;
+  }
+
+  :global(html.os-ios) .badges-smart .also[data-store="google"],
+  :global(html.os-android) .badges-smart .also[data-store="apple"] {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    margin-block-end: calc(-1 * var(--s-1));
+    font-size: var(--t-small);
+    color: var(--c-mist);
+    text-decoration: underline;
+    text-decoration-color: var(--c-line);
+    text-underline-offset: 3px;
+  }
+
+  :global(html.os-ios) .badges-smart .also:hover,
+  :global(html.os-android) .badges-smart .also:hover {
+    color: var(--c-paper);
   }
 
   .badge-text:hover {

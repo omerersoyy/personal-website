@@ -126,8 +126,12 @@ Design constraints, because it is opened almost entirely on phones from a bio ta
 - One `FoldCard` per game, stacked vertically. Each card: icon, title, one-line tagline, then App Store and Google Play buttons side by side.
 - Games with `status: soon` show `Coming soon` instead of buttons, plus a link to `/games/<slug>`.
 - Small `Lockup` at the top, nothing else. No nav, no footer links except a single quiet `tessergames.com` back to home.
-- No hero, no `FoldReveal`, no video. This page is a door, not a room.
+- ~~No hero, no `FoldReveal`, no video.~~ Revised 2026-09 (owner: "not enticing enough"): the page is still a door, but a lit one:
+  - The **first card** (the featured game) runs its `loop` across its top, edge to edge, so the card's own 17° fold cuts the video. Muted, `playsinline`, looping, poster first; under `prefers-reduced-motion` it stays on the poster. Its height follows the screen (`clamp(112px, 100svh − 500px, 300px)`) so the rule above still holds on 375×667. Only that card moves; no `FoldReveal`.
+  - A game's `flag` ("New update") sits on the loop, or above the title when there is no loop. Remove it when the news is old.
+  - inout parkour's blob walks the cards' outer edges (`BlobActor`, `data-blob-surface="out"`: never the inside lane, which runs where the badges' clear space is).
 - Buttons are the official store badges from `public/badges/`, minimum 44px tall touch targets.
+- **One badge per card on a phone** (`StoreBadges smart`): the visitor's own store, from the user agent before first paint (`os-ios` / `os-android` on `<html>`), 52px on the featured card and 48px below; the other store is a plain text link under it ("Also on Google Play"). Desktop, unknown platforms and no-JS keep both badges. Badge rules this respects (Apple / Google marketing guidelines, checked 2026-09): Apple ≥ 40px on screen, Google ≥ 28px; clear space ≥ ¼ of the badge height; with both shown, App Store first and both the same height (Google: "the same size or larger"); artwork never modified or animated. The "also" link is text, not a smaller badge, which is what keeps a single badge compliant.
 
 **Order:** newest / most promoted game first. That order is a manual `order` field, not alphabetical — during the inout parkour launch it goes on top.
 

@@ -30,6 +30,7 @@ const {
   playStoreUrl,
   cover,
   loop,
+  loopPoster,
   screenshots,
 } = game.data;
 
@@ -75,7 +76,7 @@ const jsonLd = {
         <video
           class="media"
           src={loop}
-          poster={cover.src}
+          poster={loopPoster ?? cover.src}
           autoplay
           muted
           loop

@@ -4,13 +4,21 @@
  *
  * This is the URL in every social bio. It is opened almost entirely on phones
  * from a bio tap, so every store button has to be reachable without scrolling
- * on a 375×667 screen. No hero, no FoldReveal, no video: a door, not a room.
+ * on a 375×667 screen.
+ *
+ * 2026-09 (owner): "not enticing enough". Still a door, but a lit one:
+ *   - the first card plays its game's loop across its top (PlayCard `featured`);
+ *   - each card shows ONE badge, the visitor's store, big, with the other store
+ *     as a text link — known from the user agent before first paint (below);
+ *     desktop / unknown / no-JS keep both badges;
+ *   - inout parkour's blob runs the cards' outer edges (BlobActor).
  */
 import { getCollection } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import Lockup from "../../components/Lockup.astro";
 import PlayCard from "../../components/PlayCard.astro";
 import StoreEscape from "../../components/StoreEscape.astro";
+import BlobActor from "../../components/BlobActor.astro";
 
 // Live games only. A card that cannot be installed is dead weight on a page
 // whose whole job is to hand out store links — and worse when the page is the
@@ -24,6 +32,18 @@ const games = (await getCollection("games"))
 ---
 
 <Base title="Play Tesser games" noindex chrome={false}>
+  <!-- The visitor's platform, set before first paint so the page never shows
+       two badges and then drops one. Same test as scripts/store-escape.js
+       (iPadOS reports itself as a Mac with touch). -->
+  <script is:inline slot="head">
+    (function () {
+      var u = navigator.userAgent || "";
+      var h = document.documentElement.classList;
+      if (/iPhone|iPad|iPod/.test(u) || (/Macintosh/.test(u) && navigator.maxTouchPoints > 1)) h.add("os-ios");
+      else if (/Android/i.test(u)) h.add("os-android");
+    })();
+  </script>
+
   <div class="play">
     <a href="/" class="top" aria-label="Tesser — home">
       <Lockup variant="horizontal" size={24} />
@@ -36,11 +56,13 @@ const games = (await getCollection("games"))
     <StoreEscape />
 
     <ul class="list">
-      {games.map((game) => <PlayCard game={game} />)}
+      {games.map((game, i) => <PlayCard game={game} featured={i === 0} />)}
     </ul>
 
     <a href="/" class="back">tessergames.com</a>
   </div>
+
+  <BlobActor />
 </Base>
 
 <style>
@@ -48,11 +70,11 @@ const games = (await getCollection("games"))
     min-height: 100svh;
     max-width: 440px;
     margin-inline: auto;
-    padding: var(--s-6) var(--s-4) var(--s-8);
+    padding: var(--s-4) var(--s-4) var(--s-8);
     display: grid;
     align-content: start;
     justify-items: center;
-    gap: var(--s-6);
+    gap: var(--s-4);
   }
 
   .top {

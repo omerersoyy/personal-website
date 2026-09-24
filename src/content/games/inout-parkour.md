@@ -16,7 +16,12 @@ cover: ../../assets/inout-parkour-cover.png
 # (innout/store/inout_icon_master_1024.png). Square and full-bleed like
 # Beaster's — PlayCard rounds it in CSS, so the file must not be pre-rounded.
 icon: ../../assets/inout-parkour-icon.png
-# loop: /games/inout-parkour/loop.mp4
+# 11 s, 1080x810, silent: the slip-inside moment, a risk coin by a spike, a leap
+# off a moving platform — cut from the 1.0.1 capture by the game repo's
+# store/v101/tools/preview.py --cut web_loop. /play shows it on the featured card.
+loop: /games/inout-parkour/loop.mp4
+loopPoster: /games/inout-parkour/loop-poster.webp
+flag: New update
 screenshots: []
 # Launched 2026-09; order 1 puts it above Beaster as the newest game.
 order: 1
