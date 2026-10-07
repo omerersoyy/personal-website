@@ -23,6 +23,14 @@ loop: /games/inout-parkour/loop.mp4
 loopPoster: /games/inout-parkour/loop-poster.webp
 flag: New update
 screenshots: []
+# Directory listings. PixelPicked verifies by crawling /games/inout-parkour for
+# this exact link + image (2026-10).
+featuredOn:
+  - href: https://pixelpicked.com/game/7dOLQP0Uvgy/inout-parkour/
+    img: https://api.pixelpicked.com/api/badges/7dOLQP0Uvgy/live.png?theme=dark
+    alt: Approved on PixelPicked
+    width: 250
+    height: 54
 # Launched 2026-09; order 1 puts it above Beaster as the newest game.
 order: 1
 ---

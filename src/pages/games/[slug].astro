@@ -32,6 +32,7 @@ const {
   loop,
   loopPoster,
   screenshots,
+  featuredOn,
 } = game.data;
 
 const live = status === "live";
@@ -157,6 +158,29 @@ const jsonLd = {
       <p class="links">
         <a href={`/privacy/${game.id}`}>Privacy policy</a> · <a href="/support">Support</a>
       </p>
+      {
+        featuredOn.length > 0 && (
+          <div class="featured">
+            <h3 class="mono">Featured on</h3>
+            <ul>
+              {featuredOn.map((f) => (
+                <li>
+                  <a href={f.href} target="_blank" rel="noopener">
+                    <img
+                      src={f.img}
+                      width={f.width}
+                      height={f.height}
+                      alt={f.alt}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
     </div>
 
     <div class="install-again">
@@ -172,6 +196,32 @@ const jsonLd = {
 </Base>
 
 <style>
+  .featured {
+    margin-top: var(--s-8);
+  }
+
+  .featured h3 {
+    font-size: var(--t-small);
+    font-weight: 400;
+    color: var(--c-mist);
+    margin-bottom: var(--s-3);
+  }
+
+  .featured ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+  }
+
+  .featured img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
   .hero {
     position: relative;
     --rise: var(--fold-rise);

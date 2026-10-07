@@ -38,6 +38,21 @@ const games = defineCollection({
         .array(z.object({ src: image(), alt: z.string() }))
         .default([]),
       accent: z.string().optional(), // the game's own colour, cover backdrop only
+      // Third-party listing badges ("Approved on PixelPicked" etc.), rendered
+      // on the game page as plain link + image — no third-party script. Some
+      // directories verify the listing by crawling for exactly this markup, so
+      // keep href/src as they hand them out.
+      featuredOn: z
+        .array(
+          z.object({
+            href: z.string().url(),
+            img: z.string().url(),
+            alt: z.string(),
+            width: z.number(),
+            height: z.number(),
+          }),
+        )
+        .default([]),
       order: z.number(),
     }),
 });
